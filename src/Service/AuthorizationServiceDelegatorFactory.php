@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,30 +21,33 @@
 
 namespace Lmc\Rbac\Mvc\Service;
 
-use Psr\Container\ContainerInterface;
 //use Laminas\ServiceManager\AbstractPluginManager;
 use Laminas\ServiceManager\Factory\DelegatorFactoryInterface;
 use Laminas\ServiceManager\ServiceLocatorInterface;
 use Lmc\Rbac\Exception\RuntimeException;
 use Lmc\Rbac\Mvc\Service\AuthorizationService;
 use Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareInterface;
+use Psr\Container\ContainerInterface;
+
+use function call_user_func;
 
 /**
  * Delegator factory for classes implementing AuthorizationServiceAwareInterface
- *
- * @author  Jean-Marie Leroux <jmleroux.pro@gmail.com>
- * @license MIT License
  */
 class AuthorizationServiceDelegatorFactory implements DelegatorFactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null): AuthorizationServiceAwareInterface
-    {
+    public function __invoke(
+        ContainerInterface $container,
+        $name,
+        callable $callback,
+        ?array $options = null
+    ): AuthorizationServiceAwareInterface {
         $instanceToDecorate = call_user_func($callback);
 
-        if (!$instanceToDecorate instanceof AuthorizationServiceAwareInterface) {
+        if (! $instanceToDecorate instanceof AuthorizationServiceAwareInterface) {
             throw new RuntimeException("The service $name must implement AuthorizationServiceAwareInterface.");
         }
         $authorizationService = $container->get(AuthorizationService::class);
@@ -51,8 +57,10 @@ class AuthorizationServiceDelegatorFactory implements DelegatorFactoryInterface
     }
 
     /** TODO remove */
+    // phpcs:disable
     public function createDelegatorWithName(ServiceLocatorInterface $serviceLocator, $name, $requestedName, $callback)
     {
         return $this($serviceLocator, $requestedName, $callback);
     }
+    // phpcs:enable
 }

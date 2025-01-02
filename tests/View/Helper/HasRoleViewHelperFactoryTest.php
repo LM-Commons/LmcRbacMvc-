@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,25 +22,27 @@
 namespace LmcTest\Rbac\Mvc\View\Helper;
 
 use Laminas\ServiceManager\ServiceManager;
-use Laminas\View\HelperPluginManager;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Mvc\View\Helper\HasRole;
 use Lmc\Rbac\Mvc\View\Helper\HasRoleViewHelperFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-#[CoversClass('\Lmc\Rbac\Mvc\View\Helper\HasRoleViewHelperFactory')]
-class HasRoleViewHelperFactoryTest extends \PHPUnit\Framework\TestCase
+#[CoversClass(HasRoleViewHelperFactory::class)]
+class HasRoleViewHelperFactoryTest extends TestCase
 {
     public function testFactory()
     {
         $serviceManager = new ServiceManager();
 
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\RoleService',
-            $this->getMockBuilder('Lmc\Rbac\Mvc\Service\RoleService')->disableOriginalConstructor()->getMock()
+            RoleService::class,
+            $this->getMockBuilder(RoleService::class)->disableOriginalConstructor()->getMock()
         );
 
-        $factory   = new HasRoleViewHelperFactory();
-        $viewHelper = $factory($serviceManager, 'Lmc\Rbac\Mvc\View\Helper\HasRole');
+        $factory    = new HasRoleViewHelperFactory();
+        $viewHelper = $factory($serviceManager, HasRole::class);
 
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\View\Helper\HasRole', $viewHelper);
+        $this->assertInstanceOf(HasRole::class, $viewHelper);
     }
 }

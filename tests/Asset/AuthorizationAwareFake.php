@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,18 +18,16 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace LmcTest\Rbac\Mvc\Asset;
 
 use Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareInterface;
+use Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareTrait;
 
 /**
  * A fake implementation for AuthorizationServiceAwareInterface
- * 
- * @author  Aeneas Rekkas
- * @license MIT License
  */
 class AuthorizationAwareFake implements AuthorizationServiceAwareInterface
 {
-
-    use \Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareTrait;
+    use AuthorizationServiceAwareTrait;
 }

@@ -15,19 +15,17 @@ Role-based access control module to provide additional features on top of Zend\P
 - PHP 8.1 or higher
 - [Laminas Components 3.x or higher](http://www.github.com/laminas)
 
-
 ## Optional
 
 - [DoctrineModule](https://github.com/doctrine/DoctrineModule): if you want to use some built-in role and permission providers.
-- [Laminas\DeveloperTools](https://github.com/laminas/Laminas\DeveloperTools): if you want to have useful stats added to
-the Laminas Developer toolbar.
+- [Laminas\DeveloperTools](https://github.com/laminas/Laminas\DeveloperTools): if you want to have useful stats added to the Laminas Developer toolbar.
 
 ## Upgrade
 
 LmcRbacMvc introduces breaking changes from zfcrbac v2:
-- The namespace has been changed from `ZfcRbac` to `LmcRbacMvc`. 
-- The key `zfc_rbac` in autoload and module config files has been replaced
-by the `lmc_rbac` key.
+
+- The namespace has been changed from `ZfcRbac` to `LmcRbacMvc`.
+- The key `zfc_rbac` in autoload and module config files has been replaced by the `lmc_rbac` key.
 
 You can find an [upgrade guide](UPGRADE.md) to quickly upgrade your application from major versions of ZfcRbac.
 
@@ -41,6 +39,7 @@ Install the module:
 ```sh
 $ php composer.phar require lm-commons/lmc-rbac-mvc
 ```
+
 Enable the module by adding `LmcRbacMvc` key to your `application.config.php` or `modules.config.php` file. Customize the module by copy-pasting
 the `lmc_rbac.global.php.dist` file to your `config/autoload` folder.
 

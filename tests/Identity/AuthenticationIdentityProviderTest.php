@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,6 +22,7 @@
 namespace LmcTest\Rbac\Mvc\Identity;
 
 use Laminas\Authentication\AuthenticationService;
+use Lmc\Rbac\Identity\IdentityInterface;
 use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -28,25 +32,19 @@ use PHPUnit\Framework\TestCase;
  */
 class AuthenticationIdentityProviderTest extends TestCase
 {
-    /**
-     * @var AuthenticationIdentityProvider
-     */
     protected AuthenticationIdentityProvider $identityProvider;
 
-    /**
-     * @var AuthenticationService|MockObject
-     */
     protected AuthenticationService|MockObject $authenticationService;
 
-    public function setUp() :void
+    public function setUp(): void
     {
-        $this->authenticationService = $this->createMock('Laminas\Authentication\AuthenticationService');
-        $this->identityProvider = new AuthenticationIdentityProvider($this->authenticationService);
+        $this->authenticationService = $this->createMock(AuthenticationService::class);
+        $this->identityProvider      = new AuthenticationIdentityProvider($this->authenticationService);
     }
 
     public function testCanReturnIdentity()
     {
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
 
         $this->authenticationService->expects($this->once())
                                     ->method('getIdentity')

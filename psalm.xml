@@ -8,6 +8,7 @@
     findUnusedBaselineEntry="true"
     findUnusedCode="true"
     findUnusedPsalmSuppress="true"
+    errorBaseline="psalm.baseline.xml"
 >
     <projectFiles>
         <directory name="src" />

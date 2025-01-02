@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LmcTest\Rbac\Mvc\Role;
 
 use Laminas\Permissions\Rbac\Role;
@@ -7,14 +9,16 @@ use Laminas\Permissions\Rbac\RoleInterface;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RecursiveIteratorIterator;
+use stdClass;
 
 #[CoversClass(RecursiveRoleIterator::class)]
 class RecursiveRoleIteratorTest extends TestCase
 {
     public function testIsValid()
     {
-        $roles = [
-            new Role('foo')
+        $roles        = [
+            new Role('foo'),
         ];
         $roleIterator = new RecursiveRoleIterator($roles);
         foreach ($roleIterator as $role) {
@@ -27,9 +31,12 @@ class RecursiveRoleIteratorTest extends TestCase
         $parent = new Role('foo');
         $child  = new Role('bar');
         $parent->addChild($child);
-        $roles = [$parent];
-        $roleIterator = new \RecursiveIteratorIterator(new RecursiveRoleIterator($roles), \RecursiveIteratorIterator::SELF_FIRST);
-        $count = 0;
+        $roles        = [$parent];
+        $roleIterator = new RecursiveIteratorIterator(
+            new RecursiveRoleIterator($roles),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        $count        = 0;
         foreach ($roleIterator as $role) {
             $this->assertInstanceOf(RoleInterface::class, $role);
             $count++;
@@ -42,9 +49,12 @@ class RecursiveRoleIteratorTest extends TestCase
         $parent = new Role('foo');
         $child  = new Role('bar');
         $parent->addChild($child);
-        $roles = [$parent];
-        $roleIterator = new \RecursiveIteratorIterator(new RecursiveRoleIterator($roles), \RecursiveIteratorIterator::SELF_FIRST);
-        $count = 0;
+        $roles        = [$parent];
+        $roleIterator = new RecursiveIteratorIterator(
+            new RecursiveRoleIterator($roles),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        $count        = 0;
         foreach ($roleIterator as $role) {
             $this->assertInstanceOf(RoleInterface::class, $role);
             $count++;
@@ -54,9 +64,12 @@ class RecursiveRoleIteratorTest extends TestCase
 
     public function testWithInvalidItems()
     {
-        $roles = [new Role('foo'), new \stdClass()];
-        $roleIterator = new \RecursiveIteratorIterator(new RecursiveRoleIterator($roles), \RecursiveIteratorIterator::SELF_FIRST);
-        $count = 0;
+        $roles        = [new Role('foo'), new stdClass()];
+        $roleIterator = new RecursiveIteratorIterator(
+            new RecursiveRoleIterator($roles),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        $count        = 0;
         foreach ($roleIterator as $role) {
             $this->assertInstanceOf(RoleInterface::class, $role);
             $count++;

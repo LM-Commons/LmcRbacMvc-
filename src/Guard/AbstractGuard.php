@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -25,7 +28,6 @@ use Lmc\Rbac\Mvc\Exception;
 
 /**
  * Abstract guard that hook on the MVC workflow
- *
  */
 abstract class AbstractGuard implements GuardInterface
 {
@@ -34,25 +36,23 @@ abstract class AbstractGuard implements GuardInterface
     /**
      * Event priority
      */
-    const EVENT_PRIORITY = -5;
+    public const EVENT_PRIORITY = -5;
 
     /**
      * MVC event to listen
      */
-    const EVENT_NAME = MvcEvent::EVENT_ROUTE;
+    public const EVENT_NAME = MvcEvent::EVENT_ROUTE;
 
     /**
      * {@inheritDoc}
      */
-    public function attach(EventManagerInterface $events, $priority = AbstractGuard::EVENT_PRIORITY): void
+    public function attach(EventManagerInterface $events, $priority = self::EVENT_PRIORITY): void
     {
         $this->listeners[] = $events->attach(static::EVENT_NAME, [$this, 'onResult'], $priority);
     }
 
     /**
      * @private
-     * @param  MvcEvent $event
-     * @return void
      */
     public function onResult(MvcEvent $event): void
     {

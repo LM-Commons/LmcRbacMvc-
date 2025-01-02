@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,17 +21,25 @@
 
 namespace LmcTest\Rbac\Mvc\Guard;
 
+use ArrayIterator;
+use Laminas\EventManager\EventManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
+use Lmc\Rbac\Identity\IdentityInterface;
+use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Guard\AbstractGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerGuard;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
-use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIteratorStrategy;
+use Lmc\Rbac\Mvc\Service\RoleService;
 use Lmc\Rbac\Role\InMemoryRoleProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 #[CoversClass(AbstractGuard::class)]
 #[CoversClass(ControllerGuard::class)]
@@ -36,9 +47,10 @@ class ControllerGuardTest extends TestCase
 {
     public function testAttachToRightEvent()
     {
-        $guard = new ControllerGuard($this->getMockBuilder('Lmc\Rbac\Mvc\Service\RoleService')->disableOriginalConstructor()->getMock());
+        $guard = new ControllerGuard($this->getMockBuilder(RoleService::class)
+            ->disableOriginalConstructor()->getMock());
 
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())
                      ->method('attach')
                      ->with(ControllerGuard::EVENT_NAME);
@@ -51,116 +63,116 @@ class ControllerGuardTest extends TestCase
         return [
             // Without actions
             [
-                'rules' => [
+                'rules'    => [
                     [
                         'controller' => 'MyController',
-                        'roles'      => 'role1'
+                        'roles'      => 'role1',
                     ],
                     [
                         'controller' => 'MyController2',
-                        'roles'      => ['role2', 'role3']
+                        'roles'      => ['role2', 'role3'],
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller' => 'MyController3',
-                        'roles'      => new \ArrayIterator(['role4'])
-                    ])
+                        'roles'      => new ArrayIterator(['role4']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [0 => ['role1']],
                     'mycontroller2' => [0 => ['role2', 'role3']],
-                    'mycontroller3' => [0 => ['role4']]
-                ]
+                    'mycontroller3' => [0 => ['role4']],
+                ],
             ],
 
             // With one action
             [
-                'rules' => [
+                'rules'    => [
                     [
                         'controller' => 'MyController',
                         'actions'    => 'DELETE',
-                        'roles'      => 'role1'
+                        'roles'      => 'role1',
                     ],
                     [
                         'controller' => 'MyController2',
                         'actions'    => ['delete'],
-                        'roles'      => 'role2'
+                        'roles'      => 'role2',
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller' => 'MyController3',
-                        'actions'    => new \ArrayIterator(['DELETE']),
-                        'roles'      => new \ArrayIterator(['role3'])
-                    ])
+                        'actions'    => new ArrayIterator(['DELETE']),
+                        'roles'      => new ArrayIterator(['role3']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [
-                        'delete' => ['role1']
+                        'delete' => ['role1'],
                     ],
-                    'mycontroller2'  => [
-                        'delete' => ['role2']
+                    'mycontroller2' => [
+                        'delete' => ['role2'],
                     ],
-                    'mycontroller3'  => [
-                        'delete' => ['role3']
+                    'mycontroller3' => [
+                        'delete' => ['role3'],
                     ],
-                ]
+                ],
             ],
 
             // With multiple actions
             [
-                'rules' => [
+                'rules'    => [
                     [
                         'controller' => 'MyController',
                         'actions'    => ['EDIT', 'delete'],
-                        'roles'      => 'role1'
+                        'roles'      => 'role1',
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller' => 'MyController2',
-                        'actions'    => new \ArrayIterator(['edit', 'DELETE']),
-                        'roles'      => new \ArrayIterator(['role2'])
-                    ])
+                        'actions'    => new ArrayIterator(['edit', 'DELETE']),
+                        'roles'      => new ArrayIterator(['role2']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [
                         'edit'   => ['role1'],
-                        'delete' => ['role1']
+                        'delete' => ['role1'],
                     ],
-                    'mycontroller2'  => [
+                    'mycontroller2' => [
                         'edit'   => ['role2'],
-                        'delete' => ['role2']
-                    ]
-                ]
+                        'delete' => ['role2'],
+                    ],
+                ],
             ],
 
             // Test that that if a rule is set globally to the controller, it does not override any
             // action specific rule that may have been specified before
             [
-                'rules' => [
+                'rules'    => [
                     [
                         'controller' => 'MyController',
                         'actions'    => ['edit'],
-                        'roles'      => 'role1'
+                        'roles'      => 'role1',
                     ],
                     [
                         'controller' => 'MyController',
-                        'roles'      => 'role2'
-                    ]
+                        'roles'      => 'role2',
+                    ],
                 ],
                 'expected' => [
-                    'mycontroller'  => [
+                    'mycontroller' => [
                         'edit' => ['role1'],
-                        0      => ['role2']
-                    ]
-                ]
-            ]
+                        0      => ['role2'],
+                    ],
+                ],
+            ],
         ];
     }
 
     #[DataProvider('rulesConversionProvider')]
     public function testRulesConversions(array $rules, array $expected)
     {
-        $roleService     = $this->getMockBuilder('Lmc\Rbac\Mvc\Service\RoleService')->disableOriginalConstructor()->getMock();
+        $roleService     = $this->getMockBuilder(RoleService::class)->disableOriginalConstructor()->getMock();
         $controllerGuard = new ControllerGuard($roleService, $rules);
 
-        $reflProperty = new \ReflectionProperty($controllerGuard, 'rules');
+        $reflProperty = new ReflectionProperty($controllerGuard, 'rules');
         $reflProperty->setAccessible(true);
 
         $this->assertEquals($expected, $reflProperty->getValue($controllerGuard));
@@ -171,228 +183,228 @@ class ControllerGuardTest extends TestCase
         return [
             // Test simple guard with both policies
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
-                        'roles'      => 'admin'
-                    ]
+                        'roles'      => 'admin',
+                    ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
-                        'roles'      => 'admin'
-                    ]
+                        'roles'      => 'admin',
+                    ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
 
             // Test with multiple rules
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'read',
-                        'roles'      => 'admin'
+                        'roles'      => 'admin',
                     ],
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'edit',
-                        'roles'      => 'admin'
-                    ]
+                        'roles'      => 'admin',
+                    ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'read',
-                        'roles'      => 'admin'
+                        'roles'      => 'admin',
                     ],
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'edit',
-                        'roles'      => 'admin'
-                    ]
+                        'roles'      => 'admin',
+                    ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that policy can deny unspecified rules
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
-                        'roles'      => 'member'
+                        'roles'      => 'member',
                     ],
                 ],
                 'controller'   => 'CommentController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'member'
+                    'member',
                 ],
                 'identityRole' => ['member'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
-                        'roles'      => 'member'
+                        'roles'      => 'member',
                     ],
                 ],
                 'controller'   => 'CommentController',
                 'action'       => 'edit',
                 'rolesConfig'  => [
-                    'member'
+                    'member',
                 ],
                 'identityRole' => ['member'],
                 'isGranted'    => false,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
 
             // Test assert policy can deny other actions from controller when only one is specified
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'edit',
-                        'roles'      => 'member'
+                        'roles'      => 'member',
                     ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'read',
                 'rolesConfig'  => [
-                    'member'
+                    'member',
                 ],
                 'identityRole' => ['member'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'BlogController',
                         'actions'    => 'edit',
-                        'roles'      => 'member'
+                        'roles'      => 'member',
                     ],
                 ],
                 'controller'   => 'BlogController',
                 'action'       => 'read',
                 'rolesConfig'  => [
-                    'member'
+                    'member',
                 ],
                 'identityRole' => ['member'],
                 'isGranted'    => false,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
 
             // Assert it can uses parent-children relationship
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'IndexController',
                         'actions'    => 'index',
-                        'roles'      => 'guest'
-                    ]
+                        'roles'      => 'guest',
+                    ],
                 ],
                 'controller'   => 'IndexController',
                 'action'       => 'index',
                 'rolesConfig'  => [
                     'admin' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'IndexController',
                         'actions'    => 'index',
-                        'roles'      => 'guest'
-                    ]
+                        'roles'      => 'guest',
+                    ],
                 ],
                 'controller'   => 'IndexController',
                 'action'       => 'index',
                 'rolesConfig'  => [
                     'admin' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
 
             // Assert wildcard in roles
             [
-                'rules' => [
+                'rules'        => [
                     [
                         'controller' => 'IndexController',
-                        'roles'      => '*'
-                    ]
+                        'roles'      => '*',
+                    ],
                 ],
                 'controller'   => 'IndexController',
                 'action'       => 'index',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_ALLOW
+                'policy'       => GuardInterface::POLICY_ALLOW,
             ],
             [
-                'rules'            => [
+                'rules'        => [
                     [
                         'controller' => 'IndexController',
-                        'roles'      => '*'
-                    ]
+                        'roles'      => '*',
+                    ],
                 ],
                 'controller'   => 'IndexController',
                 'action'       => 'index',
                 'rolesConfig'  => [
-                    'admin'
+                    'admin',
                 ],
                 'identityRole' => ['admin'],
                 'isGranted'    => true,
-                'policy'       => GuardInterface::POLICY_DENY
+                'policy'       => GuardInterface::POLICY_DENY,
             ],
         ];
     }
@@ -400,32 +412,33 @@ class ControllerGuardTest extends TestCase
     #[DataProvider('controllerDataProvider')]
     public function testControllerGranted(
         array $rules,
-        $controller,
-        $action,
+        string $controller,
+        string $action,
         array $rolesConfig,
-        $identityRole,
-        $isGranted,
-        $policy
+        array $identityRole,
+        bool $isGranted,
+        string $policy
     ) {
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch([
             'controller' => $controller,
-            'action' => $action,
+            'action'     => $action,
         ]);
 
         $event->setRouteMatch($routeMatch);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn($identityRole);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         $roleProvider = new InMemoryRoleProvider($rolesConfig);
         $roleService  = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, ''),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $controllerGuard = new ControllerGuard($roleService, $rules);
         $controllerGuard->setProtectionPolicy($policy);
@@ -438,37 +451,40 @@ class ControllerGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch([
             'controller' => 'MyController',
-            'action' => 'edit',
+            'action'     => 'edit',
         ]);
 
-        $application  = $this->getMockBuilder('Laminas\Mvc\Application')->disableOriginalConstructor()->getMock();
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $application  = $this->getMockBuilder(Application::class)->disableOriginalConstructor()->getMock();
+        $eventManager = $this->createMock(EventManagerInterface::class);
 
         $application->expects($this->never())->method('getEventManager')->willReturn($eventManager);
 
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         $roleProvider = new InMemoryRoleProvider([
-            'member'
+            'member',
         ]);
 
         $roleService = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, ''),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
-        $routeGuard = new ControllerGuard($roleService, [[
-            'controller' => 'MyController',
-            'actions'    => 'edit',
-            'roles'      => 'member'
-        ]]);
+        $routeGuard = new ControllerGuard($roleService, [
+            [
+                'controller' => 'MyController',
+                'actions'    => 'edit',
+                'roles'      => 'member',
+            ],
+        ]);
 
         $routeGuard->onResult($event);
 
@@ -481,11 +497,11 @@ class ControllerGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch([
             'controller' => 'MyController',
-            'action' => 'delete',
+            'action'     => 'delete',
         ]);
 
-        $application  = $this->getMockBuilder('Laminas\Mvc\Application')->disableOriginalConstructor()->getMock();
-        $eventManager = $this->createMock('Laminas\EventManager\EventManager');
+        $application  = $this->getMockBuilder(Application::class)->disableOriginalConstructor()->getMock();
+        $eventManager = $this->createMock(EventManager::class);
 
         $application->expects($this->once())->method('getEventManager')->willReturn($eventManager);
 
@@ -497,35 +513,38 @@ class ControllerGuardTest extends TestCase
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         $roleProvider = new InMemoryRoleProvider([
-            'member'
+            'member',
         ]);
 
         $roleService = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, ''),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
-        $routeGuard = new ControllerGuard($roleService, [[
-            'controller' => 'MyController',
-            'actions'    => 'edit',
-            'roles'      => 'member'
-        ]]);
+        $routeGuard = new ControllerGuard($roleService, [
+            [
+                'controller' => 'MyController',
+                'actions'    => 'edit',
+                'roles'      => 'member',
+            ],
+        ]);
 
         $routeGuard->onResult($event);
 
         $this->assertTrue($event->propagationIsStopped());
         $this->assertEquals(ControllerGuard::GUARD_UNAUTHORIZED, $event->getError());
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Exception\UnauthorizedException', $event->getParam('exception'));
+        $this->assertInstanceOf(UnauthorizedException::class, $event->getParam('exception'));
     }
 
-    public function createRouteMatch(array $params = [])
+    public function createRouteMatch(array $params = []): RouteMatch
     {
         return new RouteMatch($params);
     }

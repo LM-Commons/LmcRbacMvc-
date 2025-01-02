@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,24 +21,21 @@
 
 namespace Lmc\Rbac\Mvc\View\Helper;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Psr\Container\ContainerInterface;
 
 /**
  * Create the IsGranted view helper
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class IsGrantedViewHelperFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): IsGranted
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): IsGranted
     {
-        /* @var AuthorizationService $authorizationService */
+        /** @var AuthorizationService $authorizationService */
         $authorizationService = $container->get(AuthorizationService::class);
 
         return new IsGranted($authorizationService);

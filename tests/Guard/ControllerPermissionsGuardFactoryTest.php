@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,43 +22,45 @@
 namespace LmcTest\Rbac\Mvc\Guard;
 
 use Laminas\ServiceManager\ServiceManager;
+use Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuardFactory;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
 use Lmc\Rbac\Mvc\Guard\GuardPluginManager;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuardFactory
  */
-class ControllerPermissionsGuardFactoryTest extends \PHPUnit\Framework\TestCase
+class ControllerPermissionsGuardFactoryTest extends TestCase
 {
-
     public function testFactory()
     {
         $serviceManager = new ServiceManager();
 
         $creationOptions = [
-            'route' => 'permission'
+            'route' => 'permission',
         ];
 
         $options = new ModuleOptions([
             'identity_provider' => 'Lmc\Rbac\Mvc\Identity\AuthenticationProvider',
             'guards'            => [
-                'Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard' => $creationOptions
+                ControllerPermissionsGuard::class => $creationOptions,
             ],
             'protection_policy' => GuardInterface::POLICY_ALLOW,
         ]);
 
-        $serviceManager->setService('Lmc\Rbac\Mvc\Options\ModuleOptions', $options);
+        $serviceManager->setService(ModuleOptions::class, $options);
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\AuthorizationService',
-            $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationService')->disableOriginalConstructor()->getMock()
+            AuthorizationService::class,
+            $this->getMockBuilder(AuthorizationService::class)->disableOriginalConstructor()->getMock()
         );
 
-        $factory    = new ControllerPermissionsGuardFactory();
-        $guard = $factory($serviceManager, GuardPluginManager::class);
+        $factory = new ControllerPermissionsGuardFactory();
+        $guard   = $factory($serviceManager, GuardPluginManager::class);
 
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard', $guard);
+        $this->assertInstanceOf(ControllerPermissionsGuard::class, $guard);
         $this->assertEquals(GuardInterface::POLICY_ALLOW, $guard->getProtectionPolicy());
     }
 }

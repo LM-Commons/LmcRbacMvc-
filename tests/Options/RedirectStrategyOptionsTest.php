@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,11 +22,12 @@
 namespace LmcTest\Rbac\Mvc\Options;
 
 use Lmc\Rbac\Mvc\Options\RedirectStrategyOptions;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Options\RedirectStrategyOptions
  */
-class RedirectStrategyOptionsTest extends \PHPUnit\Framework\TestCase
+class RedirectStrategyOptionsTest extends TestCase
 {
     public function testAssertDefaultValues()
     {
@@ -43,7 +47,7 @@ class RedirectStrategyOptionsTest extends \PHPUnit\Framework\TestCase
             'redirect_to_route_connected'    => 'foo',
             'redirect_to_route_disconnected' => 'bar',
             'append_previous_uri'            => false,
-            'previous_uri_query_key'         => 'redirect-to'
+            'previous_uri_query_key'         => 'redirect-to',
         ]);
 
         $this->assertFalse($redirectStrategyOptions->getRedirectWhenConnected());

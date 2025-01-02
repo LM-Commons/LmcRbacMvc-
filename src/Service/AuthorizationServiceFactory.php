@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -25,19 +28,23 @@ use Psr\Container\ContainerInterface;
 
 /**
  * Factory to create the authorization service
- *
  */
 class AuthorizationServiceFactory implements FactoryInterface
 {
     /**
      * @inheritDoc
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): AuthorizationService
-    {
-        if (!$container->has(BaseAuthorizationService::class)) {
+    public function __invoke(
+        ContainerInterface $container,
+        $requestedName,
+        ?array $options = null
+    ): AuthorizationService {
+        if (! $container->has(BaseAuthorizationService::class)) {
+            // phpcs:disable
             throw new ServiceNotCreatedException('The service \Lmc\Rbac\Service\AuthorizationServiceInterface is not defined. Make sure that LmcRbac is configured correctly.');
+            // phpcs:enable
         }
-        /* @var RoleService $roleService */
+        /** @var RoleService $roleService */
         $roleService = $container->get(RoleService::class);
 
         /** @var BaseAuthorizationService $baseAuthorizationService */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,24 +22,21 @@
 namespace Lmc\Rbac\Mvc\Options;
 
 use Laminas\ServiceManager\Exception\ServiceNotCreatedException;
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Factory for the module options
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class ModuleOptionsFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): ModuleOptions
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): ModuleOptions
     {
         $config = $container->get('Config');
-        if (!isset($config['lmc_rbac'])) {
+        if (! isset($config['lmc_rbac'])) {
             throw new ServiceNotCreatedException("Could not find the `lmc_rbac' configuration array ");
         }
         return new ModuleOptions($container->get('Config')['lmc_rbac']);

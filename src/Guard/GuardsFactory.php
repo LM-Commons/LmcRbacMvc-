@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,24 +21,21 @@
 
 namespace Lmc\Rbac\Mvc\Guard;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Psr\Container\ContainerInterface;
 
 /**
  * Create a list of guards
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class GuardsFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): object|array
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): object|array
     {
-        /* @var ModuleOptions $options */
+        /** @var ModuleOptions $options */
         $options       = $container->get(ModuleOptions::class);
         $guardsOptions = $options->getGuards();
 
@@ -43,7 +43,7 @@ class GuardsFactory implements FactoryInterface
             return [];
         }
 
-        /* @var GuardPluginManager $pluginManager */
+        /** @var GuardPluginManager $pluginManager */
         $pluginManager = $container->get(GuardPluginManager::class);
         $guards        = [];
 

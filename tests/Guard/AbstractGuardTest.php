@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -22,20 +25,21 @@ use Laminas\EventManager\EventManager;
 use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use LmcTest\Rbac\Mvc\Asset\DummyGuard;
+use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Guard\AbstractGuard
  * @covers \Lmc\Rbac\Mvc\Guard\ControllerGuard
  */
-class AbstractGuardTest extends \PHPUnit\Framework\TestCase
+class AbstractGuardTest extends TestCase
 {
     use ProphecyTrait;
 
     public function testDoesNotLimitDispatchErrorEventToOnlyOneListener()
     {
         $eventManager = new EventManager();
-        $application = $this->prophesize(Application::class);
+        $application  = $this->prophesize(Application::class);
         $application->getEventManager()->willReturn($eventManager);
 
         $event = new MvcEvent();

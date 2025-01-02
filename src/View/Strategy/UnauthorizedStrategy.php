@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -27,9 +30,6 @@ use Lmc\Rbac\Mvc\Options\UnauthorizedStrategyOptions;
 
 /**
  * This strategy renders a specific template when a user is unauthorized
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class UnauthorizedStrategy extends AbstractStrategy
 {
@@ -37,8 +37,6 @@ class UnauthorizedStrategy extends AbstractStrategy
 
     /**
      * Constructor
-     *
-     * @param UnauthorizedStrategyOptions $options
      */
     public function __construct(UnauthorizedStrategyOptions $options)
     {
@@ -47,15 +45,14 @@ class UnauthorizedStrategy extends AbstractStrategy
 
     /**
      * @private
-     * @param  MvcEvent $event
-     * @return void
      */
     public function onError(MvcEvent $event): void
     {
         // Do nothing if no error or if response is not HTTP response
-        if (!($event->getParam('exception') instanceof UnauthorizedExceptionInterface)
-            || ($event->getResult() instanceof HttpResponse)
-            || !($event->getResponse() instanceof HttpResponse)
+        if (
+            ! $event->getParam('exception') instanceof UnauthorizedExceptionInterface
+            || $event->getResult() instanceof HttpResponse
+            || ! $event->getResponse() instanceof HttpResponse
         ) {
             return;
         }

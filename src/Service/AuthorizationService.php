@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -22,40 +25,27 @@ use Lmc\Rbac\Assertion\AssertionInterface;
 use Lmc\Rbac\Identity\IdentityInterface;
 use Lmc\Rbac\Service\AuthorizationServiceInterface as BaseAuthorizationServiceInterface;
 
-
 /**
  * Authorization service is a simple service that internally uses Rbac to check if identity is
  * granted a permission
- *
  */
 class AuthorizationService implements AuthorizationServiceInterface
 {
-    /**
-     * @var RoleService
-     */
     protected RoleService $roleService;
 
-    /**
-     * @var BaseAuthorizationServiceInterface
-     */
     protected BaseAuthorizationServiceInterface $baseAuthorizationService;
 
     /**
      * Constructor
-     *
-     * @param RoleService $roleService
-     * @param BaseAuthorizationServiceInterface $baseAuthorizationService
      */
     public function __construct(RoleService $roleService, BaseAuthorizationServiceInterface $baseAuthorizationService)
     {
-        $this->roleService            = $roleService;
+        $this->roleService              = $roleService;
         $this->baseAuthorizationService = $baseAuthorizationService;
     }
 
     /**
      * Get the current identity from the role service
-     *
-     * @return IdentityInterface|null
      */
     public function getIdentity(): ?IdentityInterface
     {
@@ -81,7 +71,7 @@ class AuthorizationService implements AuthorizationServiceInterface
     /**
      * @inheritDoc
      */
-    public function getAssertion(string $permission): \Lmc\Rbac\Assertion\AssertionInterface|callable|string|null
+    public function getAssertion(string $permission): AssertionInterface|callable|string|null
     {
         return $this->baseAuthorizationService->getAssertion($permission);
     }

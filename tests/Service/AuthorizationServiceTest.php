@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,29 +21,33 @@
 
 namespace LmcTest\Rbac\Mvc\Service;
 
+use Lmc\Rbac\Mvc\Identity\IdentityInterface;
 use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Service\AuthorizationServiceInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-#[CoversClass('\Lmc\Rbac\Mvc\Service\AuthorizationService')]
-class AuthorizationServiceTest extends \PHPUnit\Framework\TestCase
+#[CoversClass(AuthorizationService::class)]
+class AuthorizationServiceTest extends TestCase
 {
     public function testGetIdentity()
     {
-        $identity         = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityInterface');
-        $roleService      = $this->createMock('Lmc\Rbac\Mvc\Service\RoleService');
+        $identity    = $this->createMock(IdentityInterface::class);
+        $roleService = $this->createMock(RoleService::class);
         $roleService->expects($this->once())->method('getIdentity')->willReturn($identity);
-        $authorizationService    = new AuthorizationService(
+        $authorizationService = new AuthorizationService(
             $roleService,
-            $this->createMock('\Lmc\Rbac\Service\AuthorizationServiceInterface')
+            $this->createMock(AuthorizationServiceInterface::class)
         );
         $this->assertSame($authorizationService->getIdentity(), $identity);
     }
 
     public function testAssertionSettersGetters(): void
     {
-        $baseAuthorizationService = $this->createMock('\Lmc\Rbac\Service\AuthorizationServiceInterface');
-        $authorizationService = new AuthorizationService(
-            $this->createMock('Lmc\Rbac\Mvc\Service\RoleService'),
+        $baseAuthorizationService = $this->createMock(AuthorizationServiceInterface::class);
+        $authorizationService     = new AuthorizationService(
+            $this->createMock(RoleService::class),
             $baseAuthorizationService
         );
 
@@ -59,10 +66,10 @@ class AuthorizationServiceTest extends \PHPUnit\Framework\TestCase
 
     public function testIsGranted(): void
     {
-        $identity         = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
-        $roleService      = $this->createMock('Lmc\Rbac\Mvc\Service\RoleService');
+        $identity    = $this->createMock(\Lmc\Rbac\Identity\IdentityInterface::class);
+        $roleService = $this->createMock(RoleService::class);
         $roleService->expects($this->once())->method('getIdentity')->willReturn($identity);
-        $baseAuthorizationService = $this->createMock('\Lmc\Rbac\Service\AuthorizationServiceInterface');
+        $baseAuthorizationService = $this->createMock(AuthorizationServiceInterface::class);
         $baseAuthorizationService->expects($this->once())->method('isGranted')->with($identity);
 
         $authorizationService = new AuthorizationService($roleService, $baseAuthorizationService);

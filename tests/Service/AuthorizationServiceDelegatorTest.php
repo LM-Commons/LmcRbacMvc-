@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,33 +18,38 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace LmcTest\Rbac\Mvc\Service;
 
+use Exception;
 use Laminas\ServiceManager\ServiceLocatorInterface;
+use Lmc\Rbac\Exception\RuntimeException;
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
 use Lmc\Rbac\Mvc\Service\AuthorizationServiceDelegatorFactory;
 use LmcTest\Rbac\Mvc\Asset\AuthorizationAwareFake;
 use LmcTest\Rbac\Mvc\Util\ServiceManagerFactory;
+use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
+use stdClass;
+
+use function method_exists;
 
 /**
  * @covers  \Lmc\Rbac\Mvc\Service\AuthorizationServiceDelegatorFactory
- * @author  Jean-Marie Leroux <jmleroux.pro@gmail.com>
- * @license MIT License
  */
-class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
+class AuthorizationServiceDelegatorTest extends TestCase
 {
     use ProphecyTrait;
 
     public function testDelegatorFactory()
     {
-        $authServiceClassName = 'Lmc\Rbac\Mvc\Service\AuthorizationService';
+        $authServiceClassName = AuthorizationService::class;
         $delegator            = new AuthorizationServiceDelegatorFactory();
         $serviceLocator       = $this->prophesize(ServiceLocatorInterface::class);
         $serviceLocator->willImplement(ContainerInterface::class);
 
-
-        $authorizationService = $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationService')
+        $authorizationService = $this->getMockBuilder(AuthorizationService::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -52,7 +60,12 @@ class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
         $serviceLocator->get($authServiceClassName)->willReturn($authorizationService)->shouldBeCalled();
 
         /** TODO replace this test */
-        $decoratedInstance = $delegator->createDelegatorWithName($serviceLocator->reveal(), 'name', 'requestedName', $callback);
+        $decoratedInstance = $delegator->createDelegatorWithName(
+            $serviceLocator->reveal(),
+            'name',
+            'requestedName',
+            $callback
+        );
 
         $this->assertEquals($authorizationService, $decoratedInstance->getAuthorizationService());
     }
@@ -62,18 +75,18 @@ class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
         $serviceManager = ServiceManagerFactory::getServiceManager();
 
         $serviceManager->setAllowOverride(true);
-        $authorizationService = $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationService')
+        $authorizationService = $this->getMockBuilder(AuthorizationService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\AuthorizationService',
+            AuthorizationService::class,
             $authorizationService
         );
         $serviceManager->setAllowOverride(false);
 
         $serviceManager->setInvokableClass(
             'LmcTest\Rbac\Mvc\AuthorizationAware',
-            'LmcTest\Rbac\Mvc\Asset\AuthorizationAwareFake'
+            AuthorizationAwareFake::class
         );
         $decoratedInstance = $serviceManager->get('LmcTest\Rbac\Mvc\AuthorizationAware');
         $this->assertNull($decoratedInstance->getAuthorizationService());
@@ -89,23 +102,23 @@ class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
 
         $serviceManager->setAllowOverride(true);
 //        $authorizationService = $this->getMock('Lmc\Rbac\Mvc\Service\AuthorizationService', [], [], '', false);
-        $authorizationService = $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationService')
+        $authorizationService = $this->getMockBuilder(AuthorizationService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\AuthorizationService',
+            AuthorizationService::class,
             $authorizationService
         );
         $serviceManager->setAllowOverride(false);
 
         $serviceManager->setInvokableClass(
             'LmcTest\Rbac\Mvc\AuthorizationAware',
-            'LmcTest\Rbac\Mvc\Asset\AuthorizationAwareFake'
+            AuthorizationAwareFake::class
         );
 
         $serviceManager->addDelegator(
-            'LmcTest\Rbac\Mvc\Asset\AuthorizationAwareFake',
-            'Lmc\Rbac\Mvc\Service\AuthorizationServiceDelegatorFactory'
+            AuthorizationAwareFake::class,
+            AuthorizationServiceDelegatorFactory::class
         );
 
         $decoratedInstance = $serviceManager->get('LmcTest\Rbac\Mvc\AuthorizationAware');
@@ -117,11 +130,11 @@ class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
         $serviceManager = ServiceManagerFactory::getServiceManager();
 
         $serviceManager->setAllowOverride(true);
-        $authorizationService = $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationService')
+        $authorizationService = $this->getMockBuilder(AuthorizationService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\AuthorizationService',
+            AuthorizationService::class,
             $authorizationService
         );
         $serviceManager->setAllowOverride(false);
@@ -129,23 +142,26 @@ class AuthorizationServiceDelegatorTest extends \PHPUnit\Framework\TestCase
         $serviceManager->setFactory(
             'LmcRbacTest\AuthorizationAware',
             function () {
-                return new \StdClass();
+                return new stdClass();
             }
         );
 
         $serviceManager->addDelegator(
             'LmcRbacTest\AuthorizationAware',
-            'Lmc\Rbac\Mvc\Service\AuthorizationServiceDelegatorFactory'
+            AuthorizationServiceDelegatorFactory::class
         );
 
         $thrown = false;
         try {
             $serviceManager->get('LmcRbacTest\AuthorizationAware');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $thrown = true;
-            $this->assertStringEndsWith('The service LmcRbacTest\AuthorizationAware must implement AuthorizationServiceAwareInterface.', $e->getMessage());
+            $this->assertStringEndsWith(
+                'The service LmcRbacTest\AuthorizationAware must implement AuthorizationServiceAwareInterface.',
+                $e->getMessage()
+            );
             if ($e->getPrevious()) {
-                $this->assertInstanceOf('Lmc\Rbac\Exception\RuntimeException', $e->getPrevious());
+                $this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
             }
         }
 

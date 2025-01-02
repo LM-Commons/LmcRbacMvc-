@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,19 +18,22 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace LmcTest\Rbac\Mvc\Service;
+
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareTrait;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers  \Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareTrait
- * @author  Aeneas Rekkas
- * @license MIT License
  */
-class AuthorizationServiceAwareTraitTest extends \PHPUnit\Framework\TestCase
+class AuthorizationServiceAwareTraitTest extends TestCase
 {
     public function testTrait()
     {
-        $trait                = $this->getObjectForTrait('Lmc\Rbac\Mvc\Service\AuthorizationServiceAwareTrait');
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationService');
+        $trait                = $this->getObjectForTrait(AuthorizationServiceAwareTrait::class);
+        $authorizationService = $this->createMock(AuthorizationService::class);
 
         $trait->setAuthorizationService($authorizationService);
 

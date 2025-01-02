@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,20 +21,19 @@
 
 namespace Lmc\Rbac\Mvc\Guard;
 
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
 use Psr\Container\ContainerInterface;
-use Laminas\ServiceManager\Factory\FactoryInterface;
 
 /**
  * Factory to create a guard plugin manager
- *
  */
 class GuardPluginManagerFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): GuardPluginManager
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): GuardPluginManager
     {
         /** @var ModuleOptions $options */
         $options = $container->get(ModuleOptions::class);

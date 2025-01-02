@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,50 +22,62 @@
 namespace LmcTest\Rbac\Mvc\Guard;
 
 use Laminas\ServiceManager\ServiceManager;
-use Lmc\Rbac\Mvc\Guard\GuardsFactory;
+use Lmc\Rbac\Mvc\Guard\ControllerGuard;
+use Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard;
 use Lmc\Rbac\Mvc\Guard\GuardPluginManager;
+use Lmc\Rbac\Mvc\Guard\GuardsFactory;
+use Lmc\Rbac\Mvc\Guard\RouteGuard;
+use Lmc\Rbac\Mvc\Guard\RoutePermissionsGuard;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Guard\GuardsFactory
  */
-class GuardsFactoryTest extends \PHPUnit\Framework\TestCase
+class GuardsFactoryTest extends TestCase
 {
     public function testFactory()
     {
         $moduleOptions = new ModuleOptions([
             'guards' => [
-                'Lmc\Rbac\Mvc\Guard\RouteGuard' => [
-                    'admin/*' => 'role1'
+                RouteGuard::class                 => [
+                    'admin/*' => 'role1',
                 ],
-                'Lmc\Rbac\Mvc\Guard\RoutePermissionsGuard' => [
-                    'admin/post' => 'post.manage'
+                RoutePermissionsGuard::class      => [
+                    'admin/post' => 'post.manage',
                 ],
-                'Lmc\Rbac\Mvc\Guard\ControllerGuard' => [[
-                    'controller' => 'MyController',
-                    'actions'    => ['index', 'edit'],
-                    'roles'      => ['role']
-                ]],
-                'Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard' => [[
-                    'controller'  => 'PostController',
-                    'actions'     => ['index', 'edit'],
-                    'permissions' => ['post.read']
-                ]]
-            ]
+                ControllerGuard::class            => [
+                    [
+                        'controller' => 'MyController',
+                        'actions'    => ['index', 'edit'],
+                        'roles'      => ['role'],
+                    ],
+                ],
+                ControllerPermissionsGuard::class => [
+                    [
+                        'controller'  => 'PostController',
+                        'actions'     => ['index', 'edit'],
+                        'permissions' => ['post.read'],
+                    ],
+                ],
+            ],
         ]);
 
         $serviceManager = new ServiceManager();
-        $pluginManager = new GuardPluginManager($serviceManager);
+        $pluginManager  = new GuardPluginManager($serviceManager);
 
-        $serviceManager->setService('Lmc\Rbac\Mvc\Options\ModuleOptions', $moduleOptions);
-        $serviceManager->setService('Lmc\Rbac\Mvc\Guard\GuardPluginManager', $pluginManager);
+        $serviceManager->setService(ModuleOptions::class, $moduleOptions);
+        $serviceManager->setService(GuardPluginManager::class, $pluginManager);
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\RoleService',
-            $this->getMockBuilder('Lmc\Rbac\Mvc\Service\RoleService')->disableOriginalConstructor()->getMock()
+            RoleService::class,
+            $this->getMockBuilder(RoleService::class)->disableOriginalConstructor()->getMock()
         );
         $serviceManager->setService(
-            'Lmc\Rbac\Mvc\Service\AuthorizationService',
-            $this->getMockBuilder('Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface')->disableOriginalConstructor()->getMock()
+            AuthorizationService::class,
+            $this->getMockBuilder(AuthorizationServiceInterface::class)->disableOriginalConstructor()->getMock()
         );
 
         $factory = new GuardsFactory();
@@ -71,22 +86,22 @@ class GuardsFactoryTest extends \PHPUnit\Framework\TestCase
         $this->assertIsArray($guards);
 
         $this->assertCount(4, $guards);
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Guard\RouteGuard', $guards[0]);
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Guard\RoutePermissionsGuard', $guards[1]);
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Guard\ControllerGuard', $guards[2]);
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard', $guards[3]);
+        $this->assertInstanceOf(RouteGuard::class, $guards[0]);
+        $this->assertInstanceOf(RoutePermissionsGuard::class, $guards[1]);
+        $this->assertInstanceOf(ControllerGuard::class, $guards[2]);
+        $this->assertInstanceOf(ControllerPermissionsGuard::class, $guards[3]);
     }
 
     public function testReturnArrayIfNoConfig()
     {
         $moduleOptions = new ModuleOptions([
-            'guards' => []
+            'guards' => [],
         ]);
 
         $serviceManager = new ServiceManager();
-        $pluginManager = new GuardPluginManager($serviceManager);
+        $pluginManager  = new GuardPluginManager($serviceManager);
 
-        $serviceManager->setService('Lmc\Rbac\Mvc\Options\ModuleOptions', $moduleOptions);
+        $serviceManager->setService(ModuleOptions::class, $moduleOptions);
 
         $factory = new GuardsFactory();
         $guards  = $factory($serviceManager, GuardsFactory::class);

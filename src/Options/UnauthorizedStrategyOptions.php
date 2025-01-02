@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -22,9 +25,6 @@ use Laminas\Stdlib\AbstractOptions;
 
 /**
  * Unauthorized strategy options
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class UnauthorizedStrategyOptions extends AbstractOptions
 {
@@ -33,17 +33,11 @@ class UnauthorizedStrategyOptions extends AbstractOptions
      */
     protected string $template = 'error/403';
 
-    /**
-     * @param string $template
-     */
     public function setTemplate(string $template): void
     {
         $this->template = $template;
     }
 
-    /**
-     * @return string
-     */
     public function getTemplate(): string
     {
         return $this->template;

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,18 +22,18 @@
 namespace Lmc\Rbac\Mvc\Service;
 
 use Laminas\Permissions\Rbac\RoleInterface;
-use Lmc\Rbac\Service\RoleServiceInterface;
-use Traversable;
 use Lmc\Rbac\Exception;
 use Lmc\Rbac\Identity\IdentityInterface;
 use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
 use Lmc\Rbac\Mvc\Role\TraversalStrategyInterface;
+use Lmc\Rbac\Service\RoleServiceInterface;
+
+use function array_intersect;
+use function array_unique;
+use function count;
 
 /**
  * Role service
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class RoleService
 {
@@ -42,10 +45,6 @@ class RoleService
 
     /**
      * Constructor
-     *
-     * @param IdentityProviderInterface $identityProvider
-     * @param RoleServiceInterface $baseRoleService
-     * @param TraversalStrategyInterface $traversalStrategy
      */
     public function __construct(
         IdentityProviderInterface $identityProvider,
@@ -59,8 +58,6 @@ class RoleService
 
     /**
      * Set the identity provider
-     *
-     * @param IdentityProviderInterface $identityProvider
      */
     public function setIdentityProvider(IdentityProviderInterface $identityProvider): void
     {
@@ -69,8 +66,6 @@ class RoleService
 
     /**
      * Get the current identity from the identity provider
-     *
-     * @return IdentityInterface|null
      */
     public function getIdentity(): ?IdentityInterface
     {
@@ -79,8 +74,6 @@ class RoleService
 
     /**
      * Set the base role service
-     *
-     * @return RoleServiceInterface
      */
     public function getRoleService(): RoleServiceInterface
     {
@@ -106,7 +99,6 @@ class RoleService
      * This method is smart enough to automatically recursively extracts roles for hierarchical roles
      *
      * @param  string[]|RoleInterface[] $roles
-     * @return bool
      */
     public function matchIdentityRoles(array $roles): bool
     {

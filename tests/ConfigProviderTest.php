@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LmcTest\Rbac\Mvc;
 
 use Lmc\Rbac\Mvc\ConfigProvider;

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,24 +23,16 @@ namespace Lmc\Rbac\Mvc\Service;
 
 /**
  * Makes a class AuthorizationService aware
- *
- * @author  Aeneas Rekkas
- * @license MIT License
  */
 trait AuthorizationServiceAwareTrait
 {
     /**
      * The AuthorizationService
-     *
-     * @var AuthorizationServiceInterface|null
      */
     protected ?AuthorizationServiceInterface $authorizationService = null;
 
     /**
      * Set the AuthorizationService
-     *
-     * @param AuthorizationServiceInterface $authorizationService
-     * @return void
      */
     public function setAuthorizationService(AuthorizationServiceInterface $authorizationService): void
     {
@@ -46,8 +41,6 @@ trait AuthorizationServiceAwareTrait
 
     /**
      * Return the AuthorizationService
-     *
-     * @return AuthorizationServiceInterface|null
      */
     public function getAuthorizationService(): ?AuthorizationServiceInterface
     {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,11 +22,12 @@
 namespace LmcTest\Rbac\Mvc\Options;
 
 use Lmc\Rbac\Mvc\Options\UnauthorizedStrategyOptions;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Options\UnauthorizedStrategyOptions
  */
-class UnauthorizedStrategyOptionsTest extends \PHPUnit\Framework\TestCase
+class UnauthorizedStrategyOptionsTest extends TestCase
 {
     public function testAssertDefaultValues()
     {
@@ -35,7 +39,7 @@ class UnauthorizedStrategyOptionsTest extends \PHPUnit\Framework\TestCase
     public function testSettersAndGetters()
     {
         $unauthorizedStrategyOptions = new UnauthorizedStrategyOptions([
-            'template' => 'error/unauthorized'
+            'template' => 'error/unauthorized',
         ]);
 
         $this->assertEquals('error/unauthorized', $unauthorizedStrategyOptions->getTemplate());

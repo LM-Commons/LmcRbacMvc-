@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,18 +21,27 @@
 
 namespace LmcTest\Rbac\Mvc\Guard;
 
+use ArrayIterator;
+use Laminas\EventManager\EventManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
+use Lmc\Rbac\Identity\IdentityInterface;
+use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Guard\AbstractGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerGuard;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
 use Lmc\Rbac\Mvc\Guard\RouteGuard;
 use Lmc\Rbac\Mvc\Guard\RoutePermissionsGuard;
-use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIteratorStrategy;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Role\InMemoryRoleProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 #[CoversClass(AbstractGuard::class)]
 #[CoversClass(RouteGuard::class)]
@@ -37,9 +49,9 @@ class RouteGuardTest extends TestCase
 {
     public function testAttachToRightEvent()
     {
-        $guard = new RouteGuard($this->createMock('Lmc\Rbac\Mvc\Service\RoleService'));
+        $guard = new RouteGuard($this->createMock(RoleService::class));
 
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())
                      ->method('attach')
                      ->with(RouteGuard::EVENT_NAME);
@@ -61,42 +73,42 @@ class RouteGuardTest extends TestCase
         return [
             // Simple string to array conversion
             [
-                'rules' => [
-                    'route' => 'role1'
+                'rules'    => [
+                    'route' => 'role1',
                 ],
                 'expected' => [
-                    'route' => ['role1']
-                ]
+                    'route' => ['role1'],
+                ],
             ],
 
             // Array to array
             [
-                'rules' => [
-                    'route' => ['role1', 'role2']
+                'rules'    => [
+                    'route' => ['role1', 'role2'],
                 ],
                 'expected' => [
-                    'route' => ['role1', 'role2']
-                ]
+                    'route' => ['role1', 'role2'],
+                ],
             ],
 
             // Traversable to array
             [
-                'rules' => [
-                    'route' => new \ArrayIterator(['role1', 'role2'])
+                'rules'    => [
+                    'route' => new ArrayIterator(['role1', 'role2']),
                 ],
                 'expected' => [
-                    'route' => ['role1', 'role2']
-                ]
+                    'route' => ['role1', 'role2'],
+                ],
             ],
 
             // Block a route for everyone
             [
-                'rules' => [
-                    'route'
+                'rules'    => [
+                    'route',
                 ],
                 'expected' => [
-                    'route' => []
-                ]
+                    'route' => [],
+                ],
             ],
         ];
     }
@@ -104,10 +116,10 @@ class RouteGuardTest extends TestCase
     #[DataProvider('rulesConversionProvider')]
     public function testRulesConversions(array $rules, array $expected)
     {
-        $roleService = $this->createMock('Lmc\Rbac\Mvc\Service\RoleService');
+        $roleService = $this->createMock(RoleService::class);
         $routeGuard  = new RouteGuard($roleService, $rules);
 
-        $reflProperty = new \ReflectionProperty($routeGuard, 'rules');
+        $reflProperty = new ReflectionProperty($routeGuard, 'rules');
         $reflProperty->setAccessible(true);
 
         $this->assertEquals($expected, $reflProperty->getValue($routeGuard));
@@ -123,7 +135,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['adminRoute' => 'admin'],
@@ -131,7 +143,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that policy changes result for non-specified route guards
@@ -141,7 +153,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['member'],
                 'identityRole'     => ['member'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['route' => 'member'],
@@ -149,7 +161,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['member'],
                 'identityRole'     => ['member'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that composed route work for both policies
@@ -159,7 +171,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['admin/dashboard' => 'admin'],
@@ -167,7 +179,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that wildcard route work for both policies
@@ -177,7 +189,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['admin/*' => 'admin'],
@@ -185,17 +197,18 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
-            // Assert that wildcard route does match (or not depending on the policy) if rules is after matched route name
+            // Assert that wildcard route does match (or not depending on the policy)
+            // if rules is after matched route name
             [
                 'rules'            => ['fooBar/*' => 'admin'],
                 'matchedRouteName' => 'admin/fooBar/baz',
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['fooBar/*' => 'admin'],
@@ -203,55 +216,55 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that it can grant access with multiple rules
             [
                 'rules'            => [
                     'route1' => 'admin',
-                    'route2' => 'admin'
+                    'route2' => 'admin',
                 ],
                 'matchedRouteName' => 'route1',
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => [
                     'route1' => 'admin',
-                    'route2' => 'admin'
+                    'route2' => 'admin',
                 ],
                 'matchedRouteName' => 'route1',
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert that it can grant/deny access with multiple rules based on the policy
             [
                 'rules'            => [
                     'route1' => 'admin',
-                    'route2' => 'admin'
+                    'route2' => 'admin',
                 ],
                 'matchedRouteName' => 'route3',
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => [
                     'route1' => 'admin',
-                    'route2' => 'admin'
+                    'route2' => 'admin',
                 ],
                 'matchedRouteName' => 'route3',
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert it can deny access if a role does not have access
@@ -261,7 +274,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin', 'guest'],
                 'identityRole'     => ['guest'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['route' => 'admin'],
@@ -269,7 +282,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin', 'guest'],
                 'identityRole'     => ['guest'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert it can grant access using child-parent relationship between roles
@@ -277,61 +290,61 @@ class RouteGuardTest extends TestCase
                 'rules'            => ['home' => 'guest'],
                 'matchedRouteName' => 'home',
                 'rolesConfig'      => [
-                    'admin' => [
-                        'children' => ['member']
+                    'admin'  => [
+                        'children' => ['member'],
                     ],
                     'member' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['home' => 'guest'],
                 'matchedRouteName' => 'home',
                 'rolesConfig'      => [
-                    'admin' => [
-                        'children' => ['member']
+                    'admin'  => [
+                        'children' => ['member'],
                     ],
                     'member' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert it can deny access using child-parent relationship between roles (just to be sure)
             [
                 'rules'            => ['route' => 'admin'],
                 'matchedRouteName' => 'route',
-                'rolesConfig'    => [
+                'rolesConfig'      => [
                     'admin' => [
-                        'children' => 'member'
+                        'children' => 'member',
                     ],
-                    'member'
+                    'member',
                 ],
                 'identityRole'     => ['member'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['route' => 'admin'],
                 'matchedRouteName' => 'route',
-                'rolesConfig'    => [
+                'rolesConfig'      => [
                     'admin' => [
-                        'children' => 'member'
+                        'children' => 'member',
                     ],
-                    'member'
+                    'member',
                 ],
                 'identityRole'     => ['member'],
                 'isGranted'        => false,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
 
             // Assert wildcard in role
@@ -341,7 +354,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_ALLOW
+                'policy'           => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'            => ['home' => '*'],
@@ -349,7 +362,7 @@ class RouteGuardTest extends TestCase
                 'rolesConfig'      => ['admin'],
                 'identityRole'     => ['admin'],
                 'isGranted'        => true,
-                'policy'           => GuardInterface::POLICY_DENY
+                'policy'           => GuardInterface::POLICY_DENY,
             ],
         ];
     }
@@ -357,11 +370,11 @@ class RouteGuardTest extends TestCase
     #[DataProvider('routeDataProvider')]
     public function testRouteGranted(
         array $rules,
-        $matchedRouteName,
+        string $matchedRouteName,
         array $rolesConfig,
-        $identityRole,
-        $isGranted,
-        $policy
+        array $identityRole,
+        bool $isGranted,
+        string $policy
     ) {
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch();
@@ -369,16 +382,18 @@ class RouteGuardTest extends TestCase
 
         $event->setRouteMatch($routeMatch);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn($identityRole);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
-        $roleProvider = new \Lmc\Rbac\Role\InMemoryRoleProvider($rolesConfig);
+        $roleProvider = new InMemoryRoleProvider($rolesConfig);
         $roleService  = new RoleService(
             $identityProvider,
-            new \Lmc\Rbac\Service\RoleService($roleProvider, 'guest'), new RecursiveRoleIteratorStrategy());
+            new \Lmc\Rbac\Service\RoleService($roleProvider, 'guest'),
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $routeGuard = new RouteGuard($roleService, $rules);
         $routeGuard->setProtectionPolicy($policy);
@@ -391,8 +406,8 @@ class RouteGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch();
 
-        $application  = $this->createMock('Laminas\Mvc\Application');
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $application  = $this->createMock(Application::class);
+        $eventManager = $this->createMock(EventManagerInterface::class);
 
         $application->expects($this->never())->method('getEventManager')->willReturn($eventManager);
 
@@ -400,20 +415,21 @@ class RouteGuardTest extends TestCase
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
-        $roleProvider = new \Lmc\Rbac\Role\InMemoryRoleProvider(['member']);
+        $roleProvider = new InMemoryRoleProvider(['member']);
         $roleService  = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, 'guest'),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $routeGuard = new RouteGuard($roleService, [
-            'adminRoute' => 'member'
+            'adminRoute' => 'member',
         ]);
 
         $routeGuard->onResult($event);
@@ -427,8 +443,8 @@ class RouteGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch();
 
-        $application  = $this->createMock('Laminas\Mvc\Application');
-        $eventManager = $this->createMock('Laminas\EventManager\EventManager');
+        $application  = $this->createMock(Application::class);
+        $eventManager = $this->createMock(EventManager::class);
 
         $application->expects($this->once())->method('getEventManager')->willReturn($eventManager);
 
@@ -438,27 +454,28 @@ class RouteGuardTest extends TestCase
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
-        $roleProvider = new \Lmc\Rbac\Role\InMemoryRoleProvider(['member', 'guest']);
+        $roleProvider = new InMemoryRoleProvider(['member', 'guest']);
         $roleService  = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, 'guest'),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $routeGuard = new RouteGuard($roleService, [
-            'adminRoute' => 'guest'
+            'adminRoute' => 'guest',
         ]);
 
         $routeGuard->onResult($event);
 
         $this->assertTrue($event->propagationIsStopped());
         $this->assertEquals(RouteGuard::GUARD_UNAUTHORIZED, $event->getError());
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Exception\UnauthorizedException', $event->getParam('exception'));
+        $this->assertInstanceOf(UnauthorizedException::class, $event->getParam('exception'));
     }
 
     public function createRouteMatch(array $params = []): RouteMatch

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,35 +21,42 @@
 
 namespace LmcTest\Rbac\Mvc\Guard;
 
+use ArrayIterator;
+use Laminas\EventManager\EventManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
+use Lmc\Rbac\Identity\IdentityInterface;
+use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Guard\AbstractGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerPermissionsGuard;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
-use Lmc\Rbac\Role\InMemoryRoleProvider;
-use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIteratorStrategy;
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Role\InMemoryRoleProvider;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 #[CoversClass(AbstractGuard::class)]
 #[CoversClass(ControllerPermissionsGuard::class)]
 class ControllerPermissionsGuardTest extends TestCase
 {
-    private function getMockAuthorizationService()
+    private function getMockAuthorizationService(): AuthorizationService
     {
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationService');
-
-        return $authorizationService;
+        return $this->createMock(AuthorizationService::class);
     }
 
     public function testAttachToRightEvent()
     {
         $guard = new ControllerPermissionsGuard($this->getMockAuthorizationService());
 
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())->method('attach')->with(ControllerGuard::EVENT_NAME);
 
         $guard->attach($eventManager);
@@ -60,22 +70,22 @@ class ControllerPermissionsGuardTest extends TestCase
                 'rules'    => [
                     [
                         'controller'  => 'MyController',
-                        'permissions' => 'post.manage'
+                        'permissions' => 'post.manage',
                     ],
                     [
                         'controller'  => 'MyController2',
-                        'permissions' => ['post.update', 'post.delete']
+                        'permissions' => ['post.update', 'post.delete'],
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller'  => 'MyController3',
-                        'permissions' => new \ArrayIterator(['post.manage'])
-                    ])
+                        'permissions' => new ArrayIterator(['post.manage']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [0 => ['post.manage']],
                     'mycontroller2' => [0 => ['post.update', 'post.delete']],
-                    'mycontroller3' => [0 => ['post.manage']]
-                ]
+                    'mycontroller3' => [0 => ['post.manage']],
+                ],
             ],
             // With one action
             [
@@ -83,30 +93,30 @@ class ControllerPermissionsGuardTest extends TestCase
                     [
                         'controller'  => 'MyController',
                         'actions'     => 'DELETE',
-                        'permissions' => 'permission1'
+                        'permissions' => 'permission1',
                     ],
                     [
                         'controller'  => 'MyController2',
                         'actions'     => ['delete'],
-                        'permissions' => 'permission2'
+                        'permissions' => 'permission2',
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller'  => 'MyController3',
-                        'actions'     => new \ArrayIterator(['DELETE']),
-                        'permissions' => new \ArrayIterator(['permission3'])
-                    ])
+                        'actions'     => new ArrayIterator(['DELETE']),
+                        'permissions' => new ArrayIterator(['permission3']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [
-                        'delete' => ['permission1']
+                        'delete' => ['permission1'],
                     ],
                     'mycontroller2' => [
-                        'delete' => ['permission2']
+                        'delete' => ['permission2'],
                     ],
                     'mycontroller3' => [
-                        'delete' => ['permission3']
+                        'delete' => ['permission3'],
                     ],
-                ]
+                ],
             ],
             // With multiple actions
             [
@@ -114,24 +124,24 @@ class ControllerPermissionsGuardTest extends TestCase
                     [
                         'controller'  => 'MyController',
                         'actions'     => ['EDIT', 'delete'],
-                        'permissions' => 'permission1'
+                        'permissions' => 'permission1',
                     ],
-                    new \ArrayIterator([
+                    new ArrayIterator([
                         'controller'  => 'MyController2',
-                        'actions'     => new \ArrayIterator(['edit', 'DELETE']),
-                        'permissions' => new \ArrayIterator(['permission2'])
-                    ])
+                        'actions'     => new ArrayIterator(['edit', 'DELETE']),
+                        'permissions' => new ArrayIterator(['permission2']),
+                    ]),
                 ],
                 'expected' => [
                     'mycontroller'  => [
                         'edit'   => ['permission1'],
-                        'delete' => ['permission1']
+                        'delete' => ['permission1'],
                     ],
                     'mycontroller2' => [
                         'edit'   => ['permission2'],
-                        'delete' => ['permission2']
-                    ]
-                ]
+                        'delete' => ['permission2'],
+                    ],
+                ],
             ],
             // Test that that if a rule is set globally to the controller, it does not override any
             // action specific rule that may have been specified before
@@ -140,20 +150,20 @@ class ControllerPermissionsGuardTest extends TestCase
                     [
                         'controller'  => 'MyController',
                         'actions'     => ['edit'],
-                        'permissions' => 'permission1'
+                        'permissions' => 'permission1',
                     ],
                     [
                         'controller'  => 'MyController',
-                        'permissions' => 'permission2'
-                    ]
+                        'permissions' => 'permission2',
+                    ],
                 ],
                 'expected' => [
                     'mycontroller' => [
                         'edit' => ['permission1'],
-                        0      => ['permission2']
-                    ]
-                ]
-            ]
+                        0      => ['permission2'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -162,7 +172,7 @@ class ControllerPermissionsGuardTest extends TestCase
     {
         $controllerGuard = new ControllerPermissionsGuard($this->getMockAuthorizationService(), $rules);
 
-        $reflProperty = new \ReflectionProperty($controllerGuard, 'rules');
+        $reflProperty = new ReflectionProperty($controllerGuard, 'rules');
 
         $this->assertEquals($expected, $reflProperty->getValue($controllerGuard));
     }
@@ -175,27 +185,27 @@ class ControllerPermissionsGuardTest extends TestCase
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
-                        'permissions' => 'post.edit'
-                    ]
+                        'permissions' => 'post.edit',
+                    ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'edit',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
-                        'permissions' => 'post.edit'
-                    ]
+                        'permissions' => 'post.edit',
+                    ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'edit',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Test with multiple rules
             [
@@ -203,42 +213,42 @@ class ControllerPermissionsGuardTest extends TestCase
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'read',
-                        'permissions' => 'post.read'
+                        'permissions' => 'post.read',
                     ],
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'edit',
-                        'permissions' => 'post.edit'
-                    ]
+                        'permissions' => 'post.edit',
+                    ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'edit',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'read',
-                        'permissions' => 'post.read'
+                        'permissions' => 'post.read',
                     ],
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'edit',
-                        'permissions' => 'post.edit'
-                    ]
+                        'permissions' => 'post.edit',
+                    ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'edit',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Test with multiple permissions. All must be authorized.
             [
@@ -256,7 +266,7 @@ class ControllerPermissionsGuardTest extends TestCase
                     ['post.delete', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
                 'rules'               => [
@@ -273,7 +283,7 @@ class ControllerPermissionsGuardTest extends TestCase
                     ['post.delete', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
                 'rules'               => [
@@ -290,38 +300,38 @@ class ControllerPermissionsGuardTest extends TestCase
                     ['post.delete', null, false],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that policy can deny unspecified rules
             [
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
-                        'permissions' => 'post.edit'
+                        'permissions' => 'post.edit',
                     ],
                 ],
                 'controller'          => 'CommentController',
                 'action'              => 'edit',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
-                        'permissions' => 'post.edit'
+                        'permissions' => 'post.edit',
                     ],
                 ],
                 'controller'          => 'CommentController',
                 'action'              => 'edit',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Test assert policy can deny other actions from controller when only one is specified
             [
@@ -329,59 +339,59 @@ class ControllerPermissionsGuardTest extends TestCase
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'edit',
-                        'permissions' => 'post.edit'
+                        'permissions' => 'post.edit',
                     ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'read',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     [
                         'controller'  => 'BlogController',
                         'actions'     => 'edit',
-                        'permissions' => 'post.edit'
+                        'permissions' => 'post.edit',
                     ],
                 ],
                 'controller'          => 'BlogController',
                 'action'              => 'read',
                 'identityPermissions' => [
-                    ['post.edit', null, true]
+                    ['post.edit', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert wildcard in permissions
             [
                 'rules'               => [
                     [
                         'controller'  => 'IndexController',
-                        'permissions' => '*'
-                    ]
+                        'permissions' => '*',
+                    ],
                 ],
                 'controller'          => 'IndexController',
                 'action'              => 'index',
                 'identityPermissions' => [['post.edit', null, false]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     [
                         'controller'  => 'IndexController',
-                        'permissions' => '*'
-                    ]
+                        'permissions' => '*',
+                    ],
                 ],
                 'controller'          => 'IndexController',
                 'action'              => 'index',
                 'identityPermissions' => [['post.edit', null, false]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
         ];
     }
@@ -389,15 +399,15 @@ class ControllerPermissionsGuardTest extends TestCase
     #[DataProvider('controllerDataProvider')]
     public function testControllerGranted(
         array $rules,
-        $controller,
-        $action,
-        $identityPermissions,
-        $isGranted,
-        $policy
+        string $controller,
+        string $action,
+        array $identityPermissions,
+        bool $isGranted,
+        string $policy
     ) {
         $routeMatch = $this->createRouteMatch([
             'controller' => $controller,
-            'action' => $action,
+            'action'     => $action,
         ]);
 
         $authorizationService = $this->getMockAuthorizationService();
@@ -417,38 +427,39 @@ class ControllerPermissionsGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch([
             'controller' => 'MyController',
-            'action' => 'edit',
+            'action'     => 'edit',
         ]);
 
-        $application = $this->createMock('Laminas\Mvc\Application');
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $application  = $this->createMock(Application::class);
+        $eventManager = $this->createMock(EventManagerInterface::class);
 
         $application->expects($this->never())->method('getEventManager')->willReturn($eventManager);
 
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         $roleProvider = new InMemoryRoleProvider([
-            'member'
+            'member',
         ]);
 
         $roleService = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, ''),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $routeGuard = new ControllerGuard($roleService, [
             [
                 'controller' => 'MyController',
                 'actions'    => 'edit',
-                'roles'      => 'member'
-            ]
+                'roles'      => 'member',
+            ],
         ]);
 
         $routeGuard->onResult($event);
@@ -462,11 +473,11 @@ class ControllerPermissionsGuardTest extends TestCase
         $event      = new MvcEvent();
         $routeMatch = $this->createRouteMatch([
             'controller' => 'MyController',
-            'action' => 'delete',
+            'action'     => 'delete',
         ]);
 
-        $application  = $this->createMock('Laminas\Mvc\Application');
-        $eventManager = $this->createMock('Laminas\EventManager\EventManager');
+        $application  = $this->createMock(Application::class);
+        $eventManager = $this->createMock(EventManager::class);
 
         $application->expects($this->once())->method('getEventManager')->willReturn($eventManager);
 
@@ -475,37 +486,38 @@ class ControllerPermissionsGuardTest extends TestCase
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn(['member']);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())->method('getIdentity')->willReturn($identity);
 
         $roleProvider = new InMemoryRoleProvider([
-            'member'
+            'member',
         ]);
 
         $roleService = new RoleService(
             $identityProvider,
             new \Lmc\Rbac\Service\RoleService($roleProvider, ''),
-            new RecursiveRoleIteratorStrategy());
+            new RecursiveRoleIteratorStrategy()
+        );
 
         $routeGuard = new ControllerGuard($roleService, [
             [
                 'controller' => 'MyController',
                 'actions'    => 'edit',
-                'roles'      => 'member'
-            ]
+                'roles'      => 'member',
+            ],
         ]);
 
         $routeGuard->onResult($event);
 
         $this->assertTrue($event->propagationIsStopped());
         $this->assertEquals(ControllerGuard::GUARD_UNAUTHORIZED, $event->getError());
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Exception\UnauthorizedException', $event->getParam('exception'));
+        $this->assertInstanceOf(UnauthorizedException::class, $event->getParam('exception'));
     }
 
-    public function createRouteMatch(array $params = [])
+    public function createRouteMatch(array $params = []): RouteMatch
     {
         return new RouteMatch($params);
         /*
