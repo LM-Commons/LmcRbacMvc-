@@ -23,6 +23,8 @@ use LmcRbac\Permission\PermissionInterface;
  * @ORM\Entity
  * @ORM\Table(name="permissions")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'permissions')]
 class Permission implements PermissionInterface
 {
     /**
@@ -32,6 +34,9 @@ class Permission implements PermissionInterface
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -39,6 +44,7 @@ class Permission implements PermissionInterface
      *
      * @ORM\Column(type="string", length=128, unique=true)
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 128, unique: true)]
     protected $name;
 
     /**

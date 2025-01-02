@@ -25,6 +25,8 @@ use LmcRbac\Permission\PermissionInterface;
  * @ORM\Entity
  * @ORM\Table(name="roles")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'roles')]
 class FlatRole implements RoleInterface
 {
     /**
@@ -34,6 +36,9 @@ class FlatRole implements RoleInterface
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id()]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -41,6 +46,7 @@ class FlatRole implements RoleInterface
      *
      * @ORM\Column(type="string", length=48, unique=true)
      */
+    #[ORM\Column(type: 'string', length: 48, unique: true)]
     protected $name;
 
     /**
@@ -48,6 +54,7 @@ class FlatRole implements RoleInterface
      *
      * @ORM\ManyToMany(targetEntity="Permission", indexBy="name", fetch="EAGER", cascade={"persist"})
      */
+    #[Orm\ManyToMany(targetEntity: 'Permission', cascade: ['persist'], fetch: 'EAGER', indexBy: 'name')]
     protected $permissions;
 
     /**

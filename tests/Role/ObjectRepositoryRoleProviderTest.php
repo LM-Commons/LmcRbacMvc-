@@ -18,6 +18,11 @@
 
 namespace LmcRbacMvcTest\Role;
 
+use Doctrine\DBAL\Driver\PDO\SQLite\Driver;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Exception\MissingMappingDriverImplementation;
+use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\ToolsException;
 use Doctrine\Persistence\ObjectManager;
@@ -159,15 +164,25 @@ class ObjectRepositoryRoleProviderTest extends \PHPUnit\Framework\TestCase
     /**
      * @return ObjectManager
      * @throws ToolsException
+     * @throws MissingMappingDriverImplementation
      */
     private function getObjectManager()
     {
-        /* @var $entityManager \Doctrine\ORM\EntityManager */
-        $entityManager = $this->serviceManager->get('Doctrine\\ORM\\EntityManager');
-        $schemaTool    = new SchemaTool($entityManager);
+        $config = ORMSetup::createAttributeMetadataConfiguration(
+            paths: [__DIR__ . '/../Asset'],
+            isDevMode: true,
+        );
+        $connection = DriverManager::getConnection([
+            'driverClass' => Driver::class,
+            'path'        => null,
+            'memory'      => true,
+            'dbname'      => 'test',
+        ], $config);
+        $entityManager = new EntityManager($connection, $config);
+        $schemaTool    = new SchemaTool($objectManager = $entityManager);
         $schemaTool->dropDatabase();
         $schemaTool->createSchema($entityManager->getMetadataFactory()->getAllMetadata());
 
-        return $entityManager;
+        return $objectManager;
     }
 }

@@ -27,6 +27,8 @@ use Rbac\Role\Role;
  * @ORM\Entity
  * @ORM\Table(name="roles")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'roles')]
 class FlatRole extends Role
 {
     /**
@@ -36,6 +38,9 @@ class FlatRole extends Role
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer', unique: true)]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -43,6 +48,7 @@ class FlatRole extends Role
      *
      * @ORM\Column(type="string", length=32, unique=true)
      */
+    #[ORM\Column(type: 'string', length: 32, unique: true)]
     protected $name;
 
     /**
@@ -50,6 +56,7 @@ class FlatRole extends Role
      *
      * @ORM\ManyToMany(targetEntity="Permission", indexBy="name")
      */
+    #[ORM\ManyToMany(targetEntity: Permission::class, inversedBy: 'name' )]
     protected $permissions;
 
     /**
@@ -57,6 +64,7 @@ class FlatRole extends Role
      */
     public function __construct($name)
     {
+        parent::__construct($name);
         $this->name        = (string) $name;
         $this->permissions = new ArrayCollection();
     }

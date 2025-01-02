@@ -26,6 +26,8 @@ use Rbac\Permission\PermissionInterface;
  * @ORM\Entity
  * @ORM\Table(name="permissions")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'permissions')]
 class Permission implements PermissionInterface
 {
     /**
@@ -35,6 +37,9 @@ class Permission implements PermissionInterface
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -42,6 +47,7 @@ class Permission implements PermissionInterface
      *
      * @ORM\Column(type="string", length=32, unique=true)
      */
+    #[ORM\Column(type: 'string', length: 32, unique: true)]
     protected $name;
 
     /**

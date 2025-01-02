@@ -36,7 +36,7 @@ class RbacFactory implements FactoryInterface
      * @param array|null $options
      * @return Rbac
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         return new Rbac(new GeneratorStrategy());
     }

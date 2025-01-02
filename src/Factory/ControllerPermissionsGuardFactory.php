@@ -57,11 +57,11 @@ class ControllerPermissionsGuardFactory implements FactoryInterface
 
     /**
      * @param ContainerInterface $container
-     * @param string $resolvedName
+     * @param string $requestedName
      * @param array|null $options
      * @return ControllerPermissionsGuard
      */
-    public function __invoke(ContainerInterface $container, $resolvedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         if (null === $options) {
             $options = [];

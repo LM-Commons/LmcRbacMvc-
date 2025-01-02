@@ -38,7 +38,7 @@ class IsGrantedViewHelperFactory implements FactoryInterface
      * @param array|null $options
      * @return IsGranted
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         /* @var AuthorizationService $authorizationService */
         $authorizationService = $container->get(AuthorizationService::class);
