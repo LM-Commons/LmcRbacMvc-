@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,19 +21,13 @@
 
 namespace Lmc\Rbac\Mvc\Exception;
 
-use RuntimeException as BaseRuntimeException;
-
 /**
  * Exception that is thrown when a role cannot be found (for instance from a provider)
  *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  * @deprecated Use Lmc\Rbac\Exception\RoleNotFoundException instead
  */
 class RoleNotFoundException extends \Lmc\Rbac\Exception\RoleNotFoundException
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $message = 'No role could be found';
 }

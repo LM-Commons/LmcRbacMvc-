@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,56 +21,39 @@
 
 namespace LmcTest\Rbac\Mvc\Util;
 
+use Laminas\ModuleManager\ModuleManagerInterface;
 use Laminas\Mvc\Service\ServiceManagerConfig;
 use Laminas\ServiceManager\ServiceManager;
 
 /**
  * Base test case to be used when a new service manager instance is required
- *
- * @license MIT
- * @author  Marco Pivetta <ocramius@gmail.com>
  */
-abstract class ServiceManagerFactory
+class ServiceManagerFactory
 {
-    /**
-     * @var array
-     */
     private static array $config = [];
 
-    /**
-     * @static
-     * @param array $config
-     */
     public static function setApplicationConfig(array $config): void
     {
         static::$config = $config;
     }
 
-    /**
-     * @static
-     * @return array
-     */
     public static function getApplicationConfig(): array
     {
         return static::$config;
     }
 
-    /**
-     * @param array|null $config
-     * @return ServiceManager
-     */
-    public static function getServiceManager(array $config = null): ServiceManager
+    public static function getServiceManager(?array $config = null): ServiceManager
     {
-        $config = $config ?: static::getApplicationConfig();
+        $config               = $config ?: static::getApplicationConfig();
         $serviceManagerConfig = new ServiceManagerConfig(
             $config['service_manager'] ?? []
         );
-        $serviceManager = new ServiceManager();
+        $serviceManager       = new ServiceManager();
         $serviceManagerConfig->configureServiceManager($serviceManager);
         $serviceManager->setService('ApplicationConfig', $config);
         $serviceManager->setAllowOverride(true);
 
-        /* @var $moduleManager \Laminas\ModuleManager\ModuleManagerInterface */
+        /** @var ModuleManagerInterface $moduleManager */
         $moduleManager = $serviceManager->get('ModuleManager');
 
         $moduleManager->loadModules();

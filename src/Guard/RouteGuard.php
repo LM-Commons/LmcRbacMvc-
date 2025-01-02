@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -21,6 +24,13 @@ namespace Lmc\Rbac\Mvc\Guard;
 use Laminas\Mvc\MvcEvent;
 use Lmc\Rbac\Mvc\Service\RoleService;
 
+use function array_keys;
+use function fnmatch;
+use function in_array;
+use function is_int;
+
+use const FNM_CASEFOLD;
+
 /**
  * A route guard can protect a route or a hierarchy of routes (using simple wildcard pattern)
  */
@@ -28,25 +38,17 @@ class RouteGuard extends AbstractGuard
 {
     use ProtectionPolicyTrait;
 
-    /**
-     * @var RoleService
-     */
     protected RoleService $roleService;
 
     /**
      * Route guard rules
      *
      * Those rules are an associative array that map a rule with one or multiple roles
-     *
-     * @var array
      */
     protected array $rules = [];
 
     /**
      * Constructor
-     *
-     * @param RoleService $roleService
-     * @param array       $rules
      */
     public function __construct(RoleService $roleService, array $rules = [])
     {
@@ -56,9 +58,6 @@ class RouteGuard extends AbstractGuard
 
     /**
      * Set the rules (it overrides any existing rules)
-     *
-     * @param  array $rules
-     * @return void
      */
     public function setRules(array $rules): void
     {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,25 +21,28 @@
 
 namespace LmcTest\Rbac\Mvc\Identity;
 
+use Laminas\Authentication\AuthenticationService;
 use Laminas\ServiceManager\ServiceManager;
+use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider;
 use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProviderFactory;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProviderFactory
  */
-class AuthenticationIdentityProviderFactoryTest extends \PHPUnit\Framework\TestCase
+class AuthenticationIdentityProviderFactoryTest extends TestCase
 {
     public function testFactory()
     {
         $serviceManager = new ServiceManager();
         $serviceManager->setService(
-            'Laminas\Authentication\AuthenticationService',
-            $this->createMock('Laminas\Authentication\AuthenticationService')
+            AuthenticationService::class,
+            $this->createMock(AuthenticationService::class)
         );
 
         $factory                = new AuthenticationIdentityProviderFactory();
-        $authenticationProvider = $factory($serviceManager, 'Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider');
+        $authenticationProvider = $factory($serviceManager, AuthenticationIdentityProvider::class);
 
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider', $authenticationProvider);
+        $this->assertInstanceOf(AuthenticationIdentityProvider::class, $authenticationProvider);
     }
 }

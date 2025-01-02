@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -21,9 +24,11 @@ namespace Lmc\Rbac\Mvc\Guard;
 use Laminas\Mvc\MvcEvent;
 use Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface;
 
+use function in_array;
+use function strtolower;
+
 /**
  * A controller guard can protect a controller and a set of actions
- *
  */
 class ControllerPermissionsGuard extends AbstractGuard
 {
@@ -32,25 +37,17 @@ class ControllerPermissionsGuard extends AbstractGuard
     /**
      * Event priority
      */
-    const EVENT_PRIORITY = -15;
+    public const EVENT_PRIORITY = -15;
 
-    /**
-     * @var AuthorizationServiceInterface
-     */
     protected AuthorizationServiceInterface $authorizationService;
 
     /**
      * Controller guard rules
-     *
-     * @var array
      */
     protected array $rules = [];
 
     /**
      * Constructor
-     *
-     * @param AuthorizationServiceInterface $authorizationService
-     * @param array                         $rules
      */
     public function __construct(AuthorizationServiceInterface $authorizationService, array $rules = [])
     {
@@ -68,9 +65,6 @@ class ControllerPermissionsGuard extends AbstractGuard
      *     'actions'    => []/string
      *     'roles'      => []/string
      * ]
-     *
-     * @param  array $rules
-     * @return void
      */
     public function setRules(array $rules): void
     {
@@ -78,8 +72,8 @@ class ControllerPermissionsGuard extends AbstractGuard
 
         foreach ($rules as $rule) {
             $controller  = strtolower($rule['controller']);
-            $actions     = isset($rule['actions']) ? (array)$rule['actions'] : [];
-            $permissions = (array)$rule['permissions'];
+            $actions     = isset($rule['actions']) ? (array) $rule['actions'] : [];
+            $permissions = (array) $rule['permissions'];
 
             if (empty($actions)) {
                 $this->rules[$controller][0] = $permissions;
@@ -102,7 +96,7 @@ class ControllerPermissionsGuard extends AbstractGuard
         $action     = strtolower($routeMatch->getParam('action'));
 
         // If no rules apply, it is considered as granted or not based on the protection policy
-        if (!isset($this->rules[$controller])) {
+        if (! isset($this->rules[$controller])) {
             return $this->protectionPolicy === self::POLICY_ALLOW;
         }
 
@@ -128,7 +122,7 @@ class ControllerPermissionsGuard extends AbstractGuard
         }
 
         foreach ($allowedPermissions as $permission) {
-            if (!$this->authorizationService->isGranted($permission)) {
+            if (! $this->authorizationService->isGranted($permission)) {
                 return false;
             }
         }

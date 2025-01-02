@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -22,7 +25,7 @@ ini_set('error_reporting', E_ALL);
 
 $files = [
     __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/../../../autoload.php'
+    __DIR__ . '/../../../autoload.php',
 ];
 
 foreach ($files as $file) {

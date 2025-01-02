@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,25 +21,28 @@
 
 namespace LmcTest\Rbac\Mvc\View\Strategy;
 
+use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Response as HttpResponse;
 use Laminas\Mvc\MvcEvent;
+use Laminas\View\Model\ModelInterface;
 use Laminas\View\Model\ViewModel;
 use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
 use Lmc\Rbac\Mvc\Options\UnauthorizedStrategyOptions;
 use Lmc\Rbac\Mvc\View\Strategy\UnauthorizedStrategy;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\View\Strategy\UnauthorizedStrategy
  * @covers \Lmc\Rbac\Mvc\View\Strategy\AbstractStrategy
  */
-class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
+class UnauthorizedStrategyTest extends TestCase
 {
     public function testAttachToRightEvent()
     {
         $strategyListener = new UnauthorizedStrategy(new UnauthorizedStrategyOptions());
 
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())
                      ->method('attach')
                      ->with(MvcEvent::EVENT_DISPATCH_ERROR);
@@ -53,7 +59,7 @@ class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setResponse($response);
 
         $options = new UnauthorizedStrategyOptions([
-            'template' => 'error/403'
+            'template' => 'error/403',
         ]);
 
         $unauthorizedStrategy = new UnauthorizedStrategy($options);
@@ -61,7 +67,7 @@ class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
         $unauthorizedStrategy->onError($mvcEvent);
 
         $this->assertEquals(403, $mvcEvent->getResponse()->getStatusCode());
-        $this->assertInstanceOf('Laminas\View\Model\ModelInterface', $mvcEvent->getResult());
+        $this->assertInstanceOf(ModelInterface::class, $mvcEvent->getResult());
     }
 
     public function testNoErrorEvent()
@@ -71,7 +77,7 @@ class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setParam('exception', null);
 
         $options = new UnauthorizedStrategyOptions([
-            'template' => 'error/403'
+            'template' => 'error/403',
         ]);
 
         $unauthorizedStrategy = new UnauthorizedStrategy($options);
@@ -87,7 +93,7 @@ class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setParam('exception', null);
 
         $options = new UnauthorizedStrategyOptions([
-            'template' => 'error/403'
+            'template' => 'error/403',
         ]);
 
         $unauthorizedStrategy = new UnauthorizedStrategy($options);
@@ -104,17 +110,16 @@ class UnauthorizedStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setParam('error', GuardInterface::GUARD_UNAUTHORIZED);
 
         $options = new UnauthorizedStrategyOptions([
-            'template' => 'error/403'
+            'template' => 'error/403',
         ]);
 
         $unauthorizedStrategy = new UnauthorizedStrategy($options);
 
         $unauthorizedStrategy->onError($mvcEvent);
         $this->assertEquals(403, $mvcEvent->getResponse()->getStatusCode());
-        $this->assertInstanceOf('Laminas\View\Model\ModelInterface', $mvcEvent->getResult());
+        $this->assertInstanceOf(ModelInterface::class, $mvcEvent->getResult());
         /** @var ViewModel $model */
         $model = $mvcEvent->getResult();
-        $this->assertEquals( GuardInterface::GUARD_UNAUTHORIZED, $model->getVariable('error'));
+        $this->assertEquals(GuardInterface::GUARD_UNAUTHORIZED, $model->getVariable('error'));
     }
-
 }

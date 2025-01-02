@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,21 +23,20 @@ namespace Lmc\Rbac\Mvc\Options;
 
 use Lmc\Rbac\Exception;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
+use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider;
 use Lmc\Rbac\Options\ModuleOptions as BaseModuleOptions;
+
+use function sprintf;
 
 /**
  * Options for LmcRbacMvc module
- *
- * @author  Eric Richer <eric.richer@vistoconsulting.com>
- * @license MIT
  */
 class ModuleOptions extends BaseModuleOptions
 {
-
     /**
      * Key of the identity provider used to retrieve the identity
      */
-    protected string $identityProvider = 'Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider';
+    protected string $identityProvider = AuthenticationIdentityProvider::class;
 
     /**
      * Guards
@@ -74,8 +76,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Set the guards options
-     *
-     * @param  array $guards
      */
     public function setGuards(array $guards): void
     {
@@ -84,8 +84,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Get the guards options
-     *
-     * @return array
      */
     public function getGuards(): array
     {
@@ -111,7 +109,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Get the protection policy for guards
-     *
      */
     public function getProtectionPolicy(): string
     {
@@ -120,8 +117,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Set the unauthorized strategy options
-     *
-     * @param array $unauthorizedStrategyOptions
      */
     public function setUnauthorizedStrategy(array $unauthorizedStrategyOptions): void
     {
@@ -130,8 +125,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Get the unauthorized strategy options
-     *
-     * @return UnauthorizedStrategyOptions|null
      */
     public function getUnauthorizedStrategy(): ?UnauthorizedStrategyOptions
     {
@@ -144,8 +137,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Set the redirect strategy options
-     *
-     * @param array $redirectStrategyOptions
      */
     public function setRedirectStrategy(array $redirectStrategyOptions): void
     {
@@ -154,8 +145,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Get the redirect strategy options
-     *
-     * @return RedirectStrategyOptions|null
      */
     public function getRedirectStrategy(): ?RedirectStrategyOptions
     {
@@ -168,9 +157,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Set the key of the identity provider used to retrieve the identity
-     *
-     * @param string $identityProvider
-     * @return void
      */
     public function setIdentityProvider(string $identityProvider): void
     {
@@ -179,8 +165,6 @@ class ModuleOptions extends BaseModuleOptions
 
     /**
      * Get the key of the identity provider used to retrieve the identity
-     *
-     * @return string
      */
     public function getIdentityProvider(): string
     {

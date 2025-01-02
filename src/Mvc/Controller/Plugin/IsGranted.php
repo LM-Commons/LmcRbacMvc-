@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,9 +26,6 @@ use Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface;
 
 /**
  * Controller plugin that allows to test a permission in a controller
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class IsGranted extends AbstractPlugin
 {
@@ -33,8 +33,6 @@ class IsGranted extends AbstractPlugin
 
     /**
      * Constructor
-     *
-     * @param AuthorizationServiceInterface $authorizationService
      */
     public function __construct(AuthorizationServiceInterface $authorizationService)
     {
@@ -43,10 +41,6 @@ class IsGranted extends AbstractPlugin
 
     /**
      * Check against the given permission
-     *
-     * @param string $permission
-     * @param mixed|null $context
-     * @return bool
      */
     public function __invoke(string $permission, mixed $context = null): bool
     {

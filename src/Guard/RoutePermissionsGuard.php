@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,38 +18,40 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace Lmc\Rbac\Mvc\Guard;
 
 use Laminas\Mvc\MvcEvent;
 use Lmc\Rbac\Exception\InvalidArgumentException;
 use Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface;
 
+use function array_keys;
+use function fnmatch;
+use function gettype;
+use function in_array;
+use function is_int;
+use function is_object;
+use function sprintf;
+
+use const FNM_CASEFOLD;
+
 /**
  * A route guard can protect a route or a hierarchy of routes (using simple wildcard pattern)
- *
  */
 class RoutePermissionsGuard extends AbstractGuard
 {
     use ProtectionPolicyTrait;
 
-    const EVENT_PRIORITY = -8;
+    public const EVENT_PRIORITY = -8;
 
-    /**
-     * @var AuthorizationServiceInterface
-     */
     protected AuthorizationServiceInterface $authorizationService;
 
     /**
      * Route guard rules
      * Those rules are an associative array that map a rule with one or multiple permissions
-     * @var array
      */
     protected array $rules = [];
 
-    /**
-     * @param AuthorizationServiceInterface $authorizationService
-     * @param array $rules
-     */
     public function __construct(AuthorizationServiceInterface $authorizationService, array $rules = [])
     {
         $this->authorizationService = $authorizationService;
@@ -55,9 +60,6 @@ class RoutePermissionsGuard extends AbstractGuard
 
     /**
      * Set the rules (it overrides any existing rules)
-     *
-     * @param  array $rules
-     * @return void
      */
     public function setRules(array $rules): void
     {
@@ -79,7 +81,7 @@ class RoutePermissionsGuard extends AbstractGuard
      */
     public function isGranted(MvcEvent $event): bool
     {
-        $matchedRouteName = $event->getRouteMatch()->getMatchedRouteName();
+        $matchedRouteName   = $event->getRouteMatch()->getMatchedRouteName();
         $allowedPermissions = null;
 
         foreach (array_keys($this->rules) as $routeRule) {
@@ -100,11 +102,11 @@ class RoutePermissionsGuard extends AbstractGuard
 
         $permissions = $allowedPermissions['permissions'] ?? $allowedPermissions;
 
-        $condition   = $allowedPermissions['condition'] ?? GuardInterface::CONDITION_AND;
+        $condition = $allowedPermissions['condition'] ?? GuardInterface::CONDITION_AND;
 
         if (GuardInterface::CONDITION_AND === $condition) {
             foreach ($permissions as $permission) {
-                if (!$this->authorizationService->isGranted($permission)) {
+                if (! $this->authorizationService->isGranted($permission)) {
                     return false;
                 }
             }
@@ -124,7 +126,7 @@ class RoutePermissionsGuard extends AbstractGuard
 
         throw new InvalidArgumentException(sprintf(
             'Condition must be either "AND" or "OR", %s given',
-            is_object($condition) ? get_class($condition) : gettype($condition)
+            is_object($condition) ? $condition::class : gettype($condition)
         ));
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,13 +22,14 @@
 namespace LmcTest\Rbac\Mvc\Service;
 
 use Laminas\Permissions\Rbac\Role;
+use Lmc\Rbac\Identity\IdentityInterface;
 use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
-use Lmc\Rbac\Role\InMemoryRoleProvider;
-use Lmc\Rbac\Mvc\Service\RoleService;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIteratorStrategy;
 use Lmc\Rbac\Mvc\Role\TraversalStrategyInterface;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Role\InMemoryRoleProvider;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Service\RoleService
@@ -37,177 +41,181 @@ class RoleServiceTest extends TestCase
         return [
             // No identity role
             [
-                'rolesConfig' => [],
+                'rolesConfig'   => [],
                 'identityRoles' => [],
-                'rolesToCheck' => [
-                    'member'
+                'rolesToCheck'  => [
+                    'member',
                 ],
-                'doesMatch' => false
+                'doesMatch'     => false,
             ],
 
             // Simple
             [
-                'rolesConfig' => [
+                'rolesConfig'   => [
                     'member' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
-                    'guest'
+                    'guest',
                 ],
-                'rolesToCheck' => [
-                    'member'
+                'rolesToCheck'  => [
+                    'member',
                 ],
-                'doesMatch' => false
+                'doesMatch'     => false,
             ],
             [
-                'rolesConfig' => [
+                'rolesConfig'   => [
                     'member' => [
-                        'children' => ['guest']
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
-                    'member'
+                    'member',
                 ],
-                'rolesToCheck' => [
-                    'member'
+                'rolesToCheck'  => [
+                    'member',
                 ],
-                'doesMatch' => true
+                'doesMatch'     => true,
             ],
 
             // Complex role inheritance
             [
-                'rolesConfig' => [
-                    'admin' => [
-                        'children' => ['moderator']
+                'rolesConfig'   => [
+                    'admin'     => [
+                        'children' => ['moderator'],
                     ],
                     'moderator' => [
-                        'children' => ['member']
+                        'children' => ['member'],
                     ],
-                    'member' => [
-                        'children' => ['guest']
+                    'member'    => [
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
                     'member',
-                    'moderator'
+                    'moderator',
                 ],
-                'rolesToCheck' => [
-                    'admin'
+                'rolesToCheck'  => [
+                    'admin',
                 ],
-                'doesMatch' => false
+                'doesMatch'     => false,
             ],
             [
-                'rolesConfig' => [
-                    'admin' => [
-                        'children' => ['moderator']
+                'rolesConfig'   => [
+                    'admin'     => [
+                        'children' => ['moderator'],
                     ],
                     'moderator' => [
-                        'children' => ['member']
+                        'children' => ['member'],
                     ],
-                    'member' => [
-                        'children' => ['guest']
+                    'member'    => [
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
                     'member',
-                    'admin'
+                    'admin',
                 ],
-                'rolesToCheck' => [
-                    'moderator'
+                'rolesToCheck'  => [
+                    'moderator',
                 ],
-                'doesMatch' => true
+                'doesMatch'     => true,
             ],
 
             // Complex role inheritance and multiple check
             [
-                'rolesConfig' => [
+                'rolesConfig'   => [
                     'sysadmin' => [
-                        'children' => ['siteadmin', 'admin']
+                        'children' => ['siteadmin', 'admin'],
                     ],
                     'siteadmin',
-                    'admin' => [
-                        'children' => ['moderator']
+                    'admin'     => [
+                        'children' => ['moderator'],
                     ],
                     'moderator' => [
-                        'children' => ['member']
+                        'children' => ['member'],
                     ],
-                    'member' => [
-                        'children' => ['guest']
+                    'member'    => [
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
                     'member',
-                    'moderator'
+                    'moderator',
                 ],
-                'rolesToCheck' => [
+                'rolesToCheck'  => [
                     'admin',
-                    'sysadmin'
+                    'sysadmin',
                 ],
-                'doesMatch' => false
+                'doesMatch'     => false,
             ],
             [
-                'rolesConfig' => [
+                'rolesConfig'   => [
                     'sysadmin' => [
-                        'children' => ['siteadmin', 'admin']
+                        'children' => ['siteadmin', 'admin'],
                     ],
                     'siteadmin',
-                    'admin' => [
-                        'children' => ['moderator']
+                    'admin'     => [
+                        'children' => ['moderator'],
                     ],
                     'moderator' => [
-                        'children' => ['member']
+                        'children' => ['member'],
                     ],
-                    'member' => [
-                        'children' => ['guest']
+                    'member'    => [
+                        'children' => ['guest'],
                     ],
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
                     'moderator',
-                    'admin'
+                    'admin',
                 ],
-                'rolesToCheck' => [
+                'rolesToCheck'  => [
                     'sysadmin',
                     'siteadmin',
-                    'member'
+                    'member',
                 ],
-                'doesMatch' => true
+                'doesMatch'     => true,
             ],
             // With Role objects
             [
-                'rolesConfig' => [
+                'rolesConfig'   => [
                     'member',
-                    'guest'
+                    'guest',
                 ],
                 'identityRoles' => [
-                    'member'
+                    'member',
                 ],
-                'rolesToCheck' => [
+                'rolesToCheck'  => [
                     new Role('member'),
                 ],
-                'doesMatch' => true
-            ]
+                'doesMatch'     => true,
+            ],
         ];
     }
 
     #[DataProvider('roleProvider')]
-    public function testMatchIdentityRoles(array $rolesConfig, array $identityRoles, array $rolesToCheck, $doesMatch)
-    {
-        $identity = $this->createMock('Lmc\Rbac\Identity\IdentityInterface');
+    public function testMatchIdentityRoles(
+        array $rolesConfig,
+        array $identityRoles,
+        array $rolesToCheck,
+        bool $doesMatch
+    ) {
+        $identity = $this->createMock(IdentityInterface::class);
         $identity->expects($this->any())->method('getRoles')->willReturn($identityRoles);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\IdentityProviderInterface');
+        $identityProvider = $this->createMock(IdentityProviderInterface::class);
         $identityProvider->expects($this->any())
                          ->method('getIdentity')
                          ->willReturn($identity);
 
-        $roleProvider = new InMemoryRoleProvider($rolesConfig);
+        $roleProvider    = new InMemoryRoleProvider($rolesConfig);
         $baseRoleService = new \Lmc\Rbac\Service\RoleService($roleProvider, 'guest');
 
         $roleService = new RoleService($identityProvider, $baseRoleService, new RecursiveRoleIteratorStrategy());
@@ -233,7 +241,7 @@ class RoleServiceTest extends TestCase
     public function testGetRoleService(): void
     {
         $baseRoleService = $this->createMock(\Lmc\Rbac\Service\RoleService::class);
-        $roleService = new RoleService(
+        $roleService     = new RoleService(
             $this->createMock(IdentityProviderInterface::class),
             $baseRoleService,
             $this->createMock(TraversalStrategyInterface::class),

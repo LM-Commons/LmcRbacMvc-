@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,10 +26,6 @@ use Lmc\Rbac\Mvc\Service\AuthorizationService;
 /**
  * Interface that you can implement for dynamic assertions
  *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @author  Aeneas Rekkas
- * @author  Daniel Gimenes  <daniel@danielgimenes.com.br>
- * @license MIT
  * @deprecated No longer used. Use Lmc\Rbac\Assertion\AssertionInterface instead
  */
 interface AssertionInterface
@@ -35,10 +34,6 @@ interface AssertionInterface
      * Check if this assertion is true
      *
      * @TODO: for v3, update the interface to typehint to AuthorizationServiceInterface instead
-     *
-     * @param  AuthorizationService $authorizationService
-     * @param  mixed                $context
-     * @return bool
      */
     public function assert(AuthorizationService $authorizationService, mixed $context): bool;
 }

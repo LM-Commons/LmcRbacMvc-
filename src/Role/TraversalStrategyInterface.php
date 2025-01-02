@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -28,7 +31,6 @@ interface TraversalStrategyInterface
 {
     /**
      * @param Traversable|RoleInterface[] $roles
-     * @return Traversable
      */
     public function getRolesIterator(iterable $roles): Traversable;
 }

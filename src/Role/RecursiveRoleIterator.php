@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,6 +26,8 @@ use Laminas\Permissions\Rbac\RoleInterface;
 use RecursiveIterator;
 use Traversable;
 
+use function iterator_to_array;
+
 class RecursiveRoleIterator extends ArrayIterator implements RecursiveIterator
 {
     /**
@@ -35,35 +40,26 @@ class RecursiveRoleIterator extends ArrayIterator implements RecursiveIterator
         if ($roles instanceof Traversable) {
             $roles = iterator_to_array($roles);
         }
-        
+
         parent::__construct($roles);
     }
-    
-    /**
-     * @return bool
-     */
-    public function valid() : bool
+
+    public function valid(): bool
     {
-        return ($this->current() instanceof RoleInterface);
-    }
-    
-    /**
-     * @return bool
-     */
-    public function hasChildren() : bool
-    {
-        $current = $this->current();
-        
-        if (!$current instanceof RoleInterface) {
-            return false;
-        }
-        return !empty($current->getChildren());
+        return $this->current() instanceof RoleInterface;
     }
 
-    /**
-     * @return RecursiveRoleIterator|null
-     */
-    public function getChildren() :? RecursiveRoleIterator
+    public function hasChildren(): bool
+    {
+        $current = $this->current();
+
+        if (! $current instanceof RoleInterface) {
+            return false;
+        }
+        return ! empty($current->getChildren());
+    }
+
+    public function getChildren(): ?RecursiveRoleIterator
     {
         return new RecursiveRoleIterator($this->current()->getChildren());
     }

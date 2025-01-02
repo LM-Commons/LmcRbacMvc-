@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,19 +18,13 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace Lmc\Rbac\Mvc\Service;
 
-/**
- * @author      Aeneas Rekkas
- * @license     http://www.opensource.org/licenses/mit-license.html  MIT License
- */
 interface AuthorizationServiceAwareInterface
 {
     /**
      * Set the AuthorizationService
-     *
-     * @param   AuthorizationServiceInterface $authorizationService
-     * @return  void
      */
     public function setAuthorizationService(AuthorizationServiceInterface $authorizationService): void;
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,25 +22,30 @@
 namespace LmcTest\Rbac\Mvc\View\Strategy;
 
 use Laminas\Authentication\AuthenticationService;
+use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Request as HttpRequest;
 use Laminas\Http\Response as HttpResponse;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\Http\TreeRouteStack;
+use Laminas\Router\RoutePluginManager;
+use Laminas\Stdlib\ResponseInterface;
 use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Options\RedirectStrategyOptions;
 use Lmc\Rbac\Mvc\View\Strategy\RedirectStrategy;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * @covers \Lmc\Rbac\Mvc\View\Strategy\RedirectStrategy
  * @covers \Lmc\Rbac\Mvc\View\Strategy\AbstractStrategy
  */
-class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
+class RedirectStrategyTest extends TestCase
 {
     public function testAttachToRightEvent()
     {
         $strategyListener = new RedirectStrategy(new RedirectStrategyOptions(), new AuthenticationService());
 
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())
                      ->method('attach')
                      ->with(MvcEvent::EVENT_DISPATCH_ERROR);
@@ -49,7 +57,7 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
     {
         $redirectStrategy = new RedirectStrategy(new RedirectStrategyOptions(), new AuthenticationService());
         $event            = new MvcEvent();
-        $event->setParam('exception', new \RuntimeException());
+        $event->setParam('exception', new RuntimeException());
 
         $this->assertNull($redirectStrategy->onError($event));
     }
@@ -62,8 +70,8 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
         $router->addRoute('login', [
             'type'    => 'literal',
             'options' => [
-                'route' => '/login'
-            ]
+                'route' => '/login',
+            ],
         ]);
 
         $mvcEvent = new MvcEvent();
@@ -73,17 +81,17 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
 
         $options = new RedirectStrategyOptions([
             'redirect_to_route_disconnected' => 'login',
-            'append_previous_uri'            => false
+            'append_previous_uri'            => false,
         ]);
 
-        $authenticationService = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $authenticationService = $this->createMock(AuthenticationService::class);
         $authenticationService->expects($this->once())->method('hasIdentity')->will($this->returnValue(false));
 
         $redirectStrategy = new RedirectStrategy($options, $authenticationService);
 
         $redirectStrategy->onError($mvcEvent);
 
-        $this->assertInstanceOf('Laminas\Stdlib\ResponseInterface', $mvcEvent->getResult());
+        $this->assertInstanceOf(ResponseInterface::class, $mvcEvent->getResult());
         $this->assertEquals(302, $mvcEvent->getResponse()->getStatusCode());
         $this->assertEquals('/login', $mvcEvent->getResponse()->getHeaders()->get('Location')->getFieldValue());
     }
@@ -94,11 +102,11 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
 
         $router = $this->createTreeRouteStack();
         $router->addRoute('home', [
-                'type'    => 'literal',
-                'options' => [
-                    'route' => '/home'
-                ]
-            ]);
+            'type'    => 'literal',
+            'options' => [
+                'route' => '/home',
+            ],
+        ]);
 
         $mvcEvent = new MvcEvent();
         $mvcEvent->setParam('exception', new UnauthorizedException());
@@ -106,18 +114,18 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setRouter($router);
 
         $options = new RedirectStrategyOptions([
-            'redirect_to_route_connected'    => 'home',
-            'append_previous_uri'            => false
+            'redirect_to_route_connected' => 'home',
+            'append_previous_uri'         => false,
         ]);
 
-        $authenticationService = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $authenticationService = $this->createMock(AuthenticationService::class);
         $authenticationService->expects($this->once())->method('hasIdentity')->will($this->returnValue(true));
 
         $redirectStrategy = new RedirectStrategy($options, $authenticationService);
 
         $redirectStrategy->onError($mvcEvent);
 
-        $this->assertInstanceOf('Laminas\Stdlib\ResponseInterface', $mvcEvent->getResult());
+        $this->assertInstanceOf(ResponseInterface::class, $mvcEvent->getResult());
         $this->assertEquals(302, $mvcEvent->getResponse()->getStatusCode());
         $this->assertEquals('/home', $mvcEvent->getResponse()->getHeaders()->get('Location')->getFieldValue());
     }
@@ -128,11 +136,11 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
 
         $router = $this->createTreeRouteStack();
         $router->addRoute('home', [
-                'type'    => 'literal',
-                'options' => [
-                    'route' => '/home'
-                ]
-            ]);
+            'type'    => 'literal',
+            'options' => [
+                'route' => '/home',
+            ],
+        ]);
 
         $mvcEvent = new MvcEvent();
         $mvcEvent->setParam('exception', new UnauthorizedException());
@@ -140,10 +148,10 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
         $mvcEvent->setRouter($router);
 
         $options = new RedirectStrategyOptions([
-            'redirect_when_connected' => false
+            'redirect_when_connected' => false,
         ]);
 
-        $authenticationService = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $authenticationService = $this->createMock(AuthenticationService::class);
         $authenticationService->expects($this->once())->method('hasIdentity')->will($this->returnValue(true));
 
         $redirectStrategy = new RedirectStrategy($options, $authenticationService);
@@ -157,16 +165,16 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
     {
         $response = new HttpResponse();
 
-        $request  = new HttpRequest();
+        $request = new HttpRequest();
         $request->setUri('http://example.com');
 
         $router = $this->createTreeRouteStack();
         $router->addRoute('login', [
-                'type'    => 'literal',
-                'options' => [
-                    'route' => '/login'
-                ]
-            ]);
+            'type'    => 'literal',
+            'options' => [
+                'route' => '/login',
+            ],
+        ]);
 
         $mvcEvent = new MvcEvent();
         $mvcEvent->setParam('exception', new UnauthorizedException());
@@ -177,17 +185,17 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
         $options = new RedirectStrategyOptions([
             'redirect_to_route_disconnected' => 'login',
             'append_previous_uri'            => true,
-            'previous_uri_query_key'         => 'redirect-uri'
+            'previous_uri_query_key'         => 'redirect-uri',
         ]);
 
-        $authenticationService = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $authenticationService = $this->createMock(AuthenticationService::class);
         $authenticationService->expects($this->once())->method('hasIdentity')->will($this->returnValue(false));
 
         $redirectStrategy = new RedirectStrategy($options, $authenticationService);
 
         $redirectStrategy->onError($mvcEvent);
 
-        $this->assertInstanceOf('Laminas\Stdlib\ResponseInterface', $mvcEvent->getResult());
+        $this->assertInstanceOf(ResponseInterface::class, $mvcEvent->getResult());
         $this->assertEquals(302, $mvcEvent->getResponse()->getStatusCode());
         $this->assertEquals(
             '/login?redirect-uri=http://example.com/',
@@ -195,7 +203,7 @@ class RedirectStrategyTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    public function createTreeRouteStack($routePluginManager = null)
+    public function createTreeRouteStack(?RoutePluginManager $routePluginManager = null): TreeRouteStack
     {
         return new TreeRouteStack($routePluginManager);
         /*

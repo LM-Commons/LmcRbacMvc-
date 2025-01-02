@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -21,17 +24,18 @@ namespace Lmc\Rbac\Mvc\Guard;
 use Laminas\ServiceManager\AbstractPluginManager;
 use Lmc\Rbac\Exception;
 
+use function gettype;
+use function is_object;
+use function sprintf;
+
 /**
  * Plugin manager to create guards
  *
  * @method GuardInterface get($name)
- *
  */
 class GuardPluginManager extends AbstractPluginManager
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $factories = [
         ControllerGuard::class            => ControllerGuardFactory::class,
         ControllerPermissionsGuard::class => ControllerPermissionsGuardFactory::class,
@@ -50,7 +54,7 @@ class GuardPluginManager extends AbstractPluginManager
 
         throw new Exception\RuntimeException(sprintf(
             'Guards must implement "Lmc\Rbac\Mvc\Guard\GuardInterface", but "%s" was given',
-            is_object($instance) ? get_class($instance) : gettype($instance)
+            is_object($instance) ? $instance::class : gettype($instance)
         ));
     }
 }

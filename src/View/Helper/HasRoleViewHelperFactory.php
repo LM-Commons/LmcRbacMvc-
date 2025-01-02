@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,24 +21,21 @@
 
 namespace Lmc\Rbac\Mvc\View\Helper;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Service\RoleService;
+use Psr\Container\ContainerInterface;
 
 /**
  * Create the HasRole view helper
- *
- * @author  JM Leroux <jmleroux.pro@gmail.com>
- * @license MIT
  */
 class HasRoleViewHelperFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): HasRole
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): HasRole
     {
-        /* @var RoleService $roleService */
+        /** @var RoleService $roleService */
         $roleService = $container->get(RoleService::class);
 
         return new HasRole($roleService);

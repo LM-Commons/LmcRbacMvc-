@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,23 +21,26 @@
 
 namespace LmcTest\Rbac\Mvc\View\Helper;
 
+use Lmc\Rbac\Mvc\Service\RoleService;
 use Lmc\Rbac\Mvc\View\Helper\HasRole;
+use Lmc\Rbac\Mvc\View\Helper\HasRoleViewHelperFactory;
 use LmcTest\Rbac\Mvc\Util\ServiceManagerFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-#[CoversClass('\Lmc\Rbac\Mvc\View\Helper\HasRole')]
-class HasRoleTest extends \PHPUnit\Framework\TestCase
+#[CoversClass(HasRole::class)]
+class HasRoleTest extends TestCase
 {
     public function testHelperIsRegistered()
     {
         $serviceManager = ServiceManagerFactory::getServiceManager();
-        $config = $serviceManager->get('Config');
+        $config         = $serviceManager->get('Config');
         $this->assertArrayHasKey('view_helpers', $config);
         $viewHelpersConfig = $config['view_helpers'];
-        $this->assertEquals('Lmc\Rbac\Mvc\View\Helper\HasRole', $viewHelpersConfig['aliases']['hasRole']);
+        $this->assertEquals(HasRole::class, $viewHelpersConfig['aliases']['hasRole']);
         $this->assertEquals(
-            'Lmc\Rbac\Mvc\View\Helper\HasRoleViewHelperFactory',
-            $viewHelpersConfig['factories']['Lmc\Rbac\Mvc\View\Helper\HasRole']
+            HasRoleViewHelperFactory::class,
+            $viewHelpersConfig['factories'][HasRole::class]
         );
     }
 
@@ -45,7 +51,7 @@ class HasRoleTest extends \PHPUnit\Framework\TestCase
             [['member'], true],
         ];
 
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\RoleService');
+        $authorizationService = $this->createMock(RoleService::class);
         $authorizationService->expects($this->any())
             ->method('matchIdentityRoles')
             ->willReturnMap($rolesConfig);

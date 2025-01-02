@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -35,9 +38,6 @@ class RedirectStrategy extends AbstractStrategy
 
     /**
      * Constructor
-     *
-     * @param RedirectStrategyOptions        $options
-     * @param AuthenticationServiceInterface $authenticationService
      */
     public function __construct(RedirectStrategyOptions $options, AuthenticationServiceInterface $authenticationService)
     {
@@ -47,15 +47,14 @@ class RedirectStrategy extends AbstractStrategy
 
     /**
      * @private
-     * @param  MvcEvent $event
-     * @return void
      */
     public function onError(MvcEvent $event): void
     {
         // Do nothing if no error or if response is not HTTP response
-        if (!($event->getParam('exception') instanceof UnauthorizedExceptionInterface)
-            || ($event->getResult() instanceof HttpResponse)
-            || !($event->getResponse() instanceof HttpResponse)
+        if (
+            ! $event->getParam('exception') instanceof UnauthorizedExceptionInterface
+            || $event->getResult() instanceof HttpResponse
+            || ! $event->getResponse() instanceof HttpResponse
         ) {
             return;
         }
@@ -63,7 +62,7 @@ class RedirectStrategy extends AbstractStrategy
         $router = $event->getRouter();
 
         if ($this->authenticationService->hasIdentity()) {
-            if (!$this->options->getRedirectWhenConnected()) {
+            if (! $this->options->getRedirectWhenConnected()) {
                 return;
             }
 
@@ -81,8 +80,8 @@ class RedirectStrategy extends AbstractStrategy
             $uri = $router->assemble(
                 [],
                 [
-                    'name' => $redirectRoute,
-                    'query' => [$redirectKey => $previousUri]
+                    'name'  => $redirectRoute,
+                    'query' => [$redirectKey => $previousUri],
                 ]
             );
         }

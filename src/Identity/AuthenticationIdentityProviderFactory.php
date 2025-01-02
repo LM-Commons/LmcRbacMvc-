@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,26 +21,25 @@
 
 namespace Lmc\Rbac\Mvc\Identity;
 
-use Psr\Container\ContainerInterface;
 use Laminas\Authentication\AuthenticationService;
 use Laminas\ServiceManager\Factory\FactoryInterface;
-use Laminas\ServiceManager\ServiceLocatorInterface;
 use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider;
+use Psr\Container\ContainerInterface;
 
 /**
  * Factory to create the authentication identity provider
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class AuthenticationIdentityProviderFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): AuthenticationIdentityProvider
-    {
-        /* @var AuthenticationService $authenticationProvider */
+    public function __invoke(
+        ContainerInterface $container,
+        $requestedName,
+        ?array $options = null
+    ): AuthenticationIdentityProvider {
+        /** @var AuthenticationService $authenticationProvider */
         $authenticationProvider = $container->get(AuthenticationService::class);
 
         return new AuthenticationIdentityProvider($authenticationProvider);

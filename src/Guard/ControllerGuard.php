@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -21,9 +24,11 @@ namespace Lmc\Rbac\Mvc\Guard;
 use Laminas\Mvc\MvcEvent;
 use Lmc\Rbac\Mvc\Service\RoleService;
 
+use function in_array;
+use function strtolower;
+
 /**
  * A controller guard can protect a controller and a set of actions
- *
  */
 class ControllerGuard extends AbstractGuard
 {
@@ -32,25 +37,17 @@ class ControllerGuard extends AbstractGuard
     /**
      * Event priority
      */
-    const EVENT_PRIORITY = -10;
+    public const EVENT_PRIORITY = -10;
 
-    /**
-     * @var RoleService
-     */
     protected RoleService $roleService;
 
     /**
      * Controller guard rules
-     *
-     * @var array
      */
     protected array $rules = [];
 
     /**
      * Constructor
-     *
-     * @param RoleService $roleService
-     * @param array       $rules
      */
     public function __construct(RoleService $roleService, array $rules = [])
     {
@@ -68,9 +65,6 @@ class ControllerGuard extends AbstractGuard
      *     'actions'    => []/string
      *     'roles'      => []/string
      * ]
-     *
-     * @param  array $rules
-     * @return void
      */
     public function setRules(array $rules): void
     {
@@ -102,7 +96,7 @@ class ControllerGuard extends AbstractGuard
         $action     = strtolower($routeMatch->getParam('action'));
 
         // If no rules apply, it is considered as granted or not based on the protection policy
-        if (!isset($this->rules[$controller])) {
+        if (! isset($this->rules[$controller])) {
             return $this->protectionPolicy === self::POLICY_ALLOW;
         }
 

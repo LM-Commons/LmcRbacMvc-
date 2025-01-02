@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,66 +23,46 @@ namespace Lmc\Rbac\Mvc\Service;
 
 use Lmc\Rbac\Assertion\AssertionInterface;
 use Lmc\Rbac\Identity\IdentityInterface;
-use Lmc\Rbac\Permission\PermissionInterface;
 
 /**
  * Minimal interface for an authorization service
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 interface AuthorizationServiceInterface
 {
     /**
      * Check if the permission is granted to the current identity
-     *
-     * @param string $permission
-     * @param mixed|null $context
-     * @return bool
      */
     public function isGranted(string $permission, mixed $context = null): bool;
 
     /**
      * Get the current identity from the role service
-     *
-     * @return IdentityInterface|null
      */
     public function getIdentity(): ?IdentityInterface;
 
     /**
      * Set assertions, either merging or replacing (default)
+     *
      * @param array<string|callable|AssertionInterface> $assertions
-     * @param bool $merge
-     * @return void
      */
     public function setAssertions(array $assertions, bool $merge = false): void;
 
     /**
      * Set assertion for a given permission
-     * @param string $permission
-     * @param AssertionInterface|callable|string $assertion
-     * @return void
      */
     public function setAssertion(string $permission, AssertionInterface|callable|string $assertion): void;
 
     /**
      * Check if there are assertions for the permission
-     * @param string $permission
-     * @return bool
      */
     public function hasAssertion(string $permission): bool;
 
     /**
      * Get the assertions
-     * @return array
      */
     public function getAssertions(): array;
 
     /**
      * Get the assertions for the given permission
-     * @param string $permission
-     * @return AssertionInterface|callable|string|null
      */
     public function getAssertion(string $permission): AssertionInterface|callable|string|null;
-
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,39 +21,34 @@
 
 namespace Lmc\Rbac\Mvc\Service;
 
-use Laminas\ServiceManager\Exception\ServiceNotCreatedException;
-use Lmc\Rbac\Service\RoleServiceInterface;
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Identity\IdentityProviderInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
-use Lmc\Rbac\Mvc\Role\RoleProviderPluginManager;
 use Lmc\Rbac\Mvc\Role\RecursiveRoleIteratorStrategy;
 use Lmc\Rbac\Mvc\Role\TraversalStrategyInterface;
+use Lmc\Rbac\Service\RoleServiceInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Factory to create the role service
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class RoleServiceFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): RoleService
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): RoleService
     {
-        /* @var ModuleOptions $moduleOptions */
+        /** @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
 
-        /* @var IdentityProviderInterface $identityProvider */
+        /** @var IdentityProviderInterface $identityProvider */
         $identityProvider = $container->get($moduleOptions->getIdentityProvider());
 
-        /* @var TraversalStrategyInterface $traversalStrategy */
+        /** @var TraversalStrategyInterface $traversalStrategy */
         $traversalStrategy = new RecursiveRoleIteratorStrategy();
 
-        /* @var RoleServiceInterface $baseRoleService */
+        /** @var RoleServiceInterface $baseRoleService */
         $baseRoleService = $container->get(RoleServiceInterface::class);
 
         return new RoleService($identityProvider, $baseRoleService, $traversalStrategy);

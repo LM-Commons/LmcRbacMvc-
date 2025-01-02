@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,26 +21,30 @@
 
 namespace LmcTest\Rbac\Mvc\Service;
 
-use Laminas\ServiceManager\ServiceManager;
-use Lmc\Rbac\Mvc\Service\RoleServiceFactory;
+use Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Lmc\Rbac\Mvc\Service\RoleService;
+use Lmc\Rbac\Mvc\Service\RoleServiceFactory;
+use Lmc\Rbac\Service\RoleServiceInterface;
+use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Service\RoleServiceFactory
  */
-class RoleServiceFactoryTest extends \PHPUnit\Framework\TestCase
+class RoleServiceFactoryTest extends TestCase
 {
     public function testFactory()
     {
         $options = new ModuleOptions([
-            'identity_provider'    => 'Lmc\Rbac\Mvc\Identity\AuthenticationProvider',
+            'identity_provider' => 'Lmc\Rbac\Mvc\Identity\AuthenticationProvider',
         ]);
 
-        $identityProvider = $this->createMock('Lmc\Rbac\Mvc\Identity\AuthenticationIdentityProvider');
+        $identityProvider = $this->createMock(AuthenticationIdentityProvider::class);
 
-        $baseRoleService = $this->createMock('Lmc\Rbac\Service\RoleServiceInterface');
+        $baseRoleService = $this->createMock(RoleServiceInterface::class);
 
-        $container = $this->createMock('Psr\Container\ContainerInterface');
+        $container = $this->createMock(ContainerInterface::class);
 
         $container->expects($this->exactly(3))
             ->method('get')
@@ -45,11 +52,11 @@ class RoleServiceFactoryTest extends \PHPUnit\Framework\TestCase
                 return match ($name) {
                     ModuleOptions::class => $options,
                     $options->getIdentityProvider() => $identityProvider,
-                    'Lmc\Rbac\Service\RoleServiceInterface' => $baseRoleService,
+                    RoleServiceInterface::class => $baseRoleService,
                 };
             });
 
-        $factory = new RoleServiceFactory();
-        $roleService = $factory($container, 'Lmc\Rbac\Mvc\Service\RoleService');
+        $factory     = new RoleServiceFactory();
+        $roleService = $factory($container, RoleService::class);
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,30 +21,32 @@
 
 namespace Lmc\Rbac\Mvc\Guard;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
 use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Psr\Container\ContainerInterface;
 
 /**
  * Create a route guard for checking permissions
- *
  */
 class RoutePermissionsGuardFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): RoutePermissionsGuard
-    {
+    public function __invoke(
+        ContainerInterface $container,
+        $requestedName,
+        ?array $options = null
+    ): RoutePermissionsGuard {
         if (null === $options) {
             $options = [];
         }
 
-        /* @var ModuleOptions $moduleOptions */
+        /** @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
 
-        /* @var AuthorizationService $authorizationService */
+        /** @var AuthorizationService $authorizationService */
         $authorizationService = $container->get(AuthorizationService::class);
 
         $routeGuard = new RoutePermissionsGuard($authorizationService, $options);

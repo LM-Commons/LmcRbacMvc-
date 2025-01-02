@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -15,18 +18,27 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the MIT license.
  */
+
 namespace LmcTest\Rbac\Mvc\Guard;
 
+use ArrayIterator;
+use Laminas\EventManager\EventManager;
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\Application;
 use Laminas\Mvc\MvcEvent;
 use Laminas\Router\RouteMatch;
+use Lmc\Rbac\Mvc\Exception\UnauthorizedException;
 use Lmc\Rbac\Mvc\Guard\AbstractGuard;
 use Lmc\Rbac\Mvc\Guard\ControllerGuard;
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
 use Lmc\Rbac\Mvc\Guard\RouteGuard;
 use Lmc\Rbac\Mvc\Guard\RoutePermissionsGuard;
+use Lmc\Rbac\Mvc\Service\AuthorizationService;
+use Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 #[CoversClass(AbstractGuard::class)]
 #[CoversClass(RoutePermissionsGuard::class)]
@@ -34,10 +46,10 @@ class RoutePermissionsGuardTest extends TestCase
 {
     public function testAttachToRightEvent()
     {
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
         $eventManager->expects($this->once())->method('attach')->with(RouteGuard::EVENT_NAME);
 
-        $guard = new RoutePermissionsGuard($this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationService'));
+        $guard = new RoutePermissionsGuard($this->createMock(AuthorizationService::class));
         $guard->attach($eventManager);
     }
 
@@ -56,38 +68,38 @@ class RoutePermissionsGuardTest extends TestCase
             // Simple string to array conversion
             [
                 'rules'    => [
-                    'route' => 'permission1'
+                    'route' => 'permission1',
                 ],
                 'expected' => [
-                    'route' => ['permission1']
-                ]
+                    'route' => ['permission1'],
+                ],
             ],
             // Array to array
             [
                 'rules'    => [
-                    'route' => ['permission1', 'permission2']
+                    'route' => ['permission1', 'permission2'],
                 ],
                 'expected' => [
-                    'route' => ['permission1', 'permission2']
-                ]
+                    'route' => ['permission1', 'permission2'],
+                ],
             ],
             // Traversable to array
             [
                 'rules'    => [
-                    'route' => new \ArrayIterator(['permission1', 'permission2'])
+                    'route' => new ArrayIterator(['permission1', 'permission2']),
                 ],
                 'expected' => [
-                    'route' => ['permission1', 'permission2']
-                ]
+                    'route' => ['permission1', 'permission2'],
+                ],
             ],
             // Block a route for everyone
             [
                 'rules'    => [
-                    'route'
+                    'route',
                 ],
                 'expected' => [
-                    'route' => []
-                ]
+                    'route' => [],
+                ],
             ],
         ];
     }
@@ -95,9 +107,9 @@ class RoutePermissionsGuardTest extends TestCase
     #[DataProvider('rulesConversionProvider')]
     public function testRulesConversions(array $rules, array $expected)
     {
-        $roleService  = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationService');
-        $routeGuard   = new RoutePermissionsGuard($roleService, $rules);
-        $reflexionProperty = new \ReflectionProperty($routeGuard, 'rules');
+        $roleService       = $this->createMock(AuthorizationService::class);
+        $routeGuard        = new RoutePermissionsGuard($roleService, $rules);
+        $reflexionProperty = new ReflectionProperty($routeGuard, 'rules');
         $this->assertEquals($expected, $reflexionProperty->getValue($routeGuard));
     }
 
@@ -110,14 +122,14 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'adminRoute',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['adminRoute' => 'post.edit'],
                 'matchedRouteName'    => 'adminRoute',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that policy changes result for non-specified route guards
             [
@@ -125,14 +137,14 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'anotherRoute',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['route' => 'post.edit'],
                 'matchedRouteName'    => 'anotherRoute',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that composed route work for both policies
             [
@@ -140,14 +152,14 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'admin/dashboard',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['admin/dashboard' => 'post.edit'],
                 'matchedRouteName'    => 'admin/dashboard',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that wildcard route work for both policies
             [
@@ -155,91 +167,92 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'admin/dashboard',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['admin/*' => 'post.edit'],
                 'matchedRouteName'    => 'admin/dashboard',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
-            // Assert that wildcard route does match (or not depending on the policy) if rules is after matched route name
+            // Assert that wildcard route does match (or not depending on the policy)
+            // if rules is after matched route name
             [
                 'rules'               => ['fooBar/*' => 'post.edit'],
                 'matchedRouteName'    => 'admin/fooBar/baz',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['fooBar/*' => 'post.edit'],
                 'matchedRouteName'    => 'admin/fooBar/baz',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that it can grant access with multiple rules
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route1',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route2',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route1',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route2',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert that it can grant/deny access with multiple rules based on the policy
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route3',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => [
                     'route1' => 'post.edit',
-                    'route2' => 'post.edit'
+                    'route2' => 'post.edit',
                 ],
                 'matchedRouteName'    => 'route3',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert it can deny access if the only permission does not have access
             [
@@ -247,20 +260,20 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [
                     ['post.edit', null, false],
-                    ['post.read', null, true]
+                    ['post.read', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['route' => 'post.edit'],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [
                     ['post.edit', null, false],
-                    ['post.read', null, true]
+                    ['post.read', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert it can deny access if one of the permission does not have access
             [
@@ -268,30 +281,30 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [
                     ['post.edit', null, true],
-                    ['post.read', null, true]
+                    ['post.read', null, true],
                 ],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['route' => ['post.edit', 'post.read']],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [
                     ['post.edit', null, true],
-                    ['post.read', null, false]
+                    ['post.read', null, false],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['route' => ['post.edit', 'post.read']],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [
                     ['post.edit', null, false],
-                    ['post.read', null, true]
+                    ['post.read', null, true],
                 ],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             // Assert wildcard in permission
             [
@@ -299,14 +312,14 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'home',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['home' => '*'],
                 'matchedRouteName'    => 'home',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             // Assert wildcard wins all
             [
@@ -314,73 +327,81 @@ class RoutePermissionsGuardTest extends TestCase
                 'matchedRouteName'    => 'home',
                 'identityPermissions' => [['post.edit', null, false]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_ALLOW
+                'policy'              => GuardInterface::POLICY_ALLOW,
             ],
             [
                 'rules'               => ['home' => ['*', 'post.edit']],
                 'matchedRouteName'    => 'home',
                 'identityPermissions' => [['post.edit', null, false]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
-                'rules'               => ['route' => [
-                    'permissions' => ['post.edit', 'post.read'],
-                    'condition'   => GuardInterface::CONDITION_OR
-                ]],
+                'rules'               => [
+                    'route' => [
+                        'permissions' => ['post.edit', 'post.read'],
+                        'condition'   => GuardInterface::CONDITION_OR,
+                    ],
+                ],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [['post.edit', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
-                'rules'               => ['route' => [
-                    'permissions' => ['post.edit', 'post.read'],
-                    'condition'   => GuardInterface::CONDITION_OR
-                ]],
+                'rules'               => [
+                    'route' => [
+                        'permissions' => ['post.edit', 'post.read'],
+                        'condition'   => GuardInterface::CONDITION_OR,
+                    ],
+                ],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [['post.edit', null, false], ['post.read', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
-                'rules'               => ['route' => [
-                    'permissions' => ['post.edit', 'post.read'],
-                    'condition'   => GuardInterface::CONDITION_AND
-                ]],
+                'rules'               => [
+                    'route' => [
+                        'permissions' => ['post.edit', 'post.read'],
+                        'condition'   => GuardInterface::CONDITION_AND,
+                    ],
+                ],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [['post.edit', null, true], ['post.read', null, false]],
                 'isGranted'           => false,
-                'policy'              => GuardInterface::POLICY_DENY
+                'policy'              => GuardInterface::POLICY_DENY,
             ],
             [
-                'rules'               => ['route' => [
-                    'permissions' => ['post.edit', 'post.read'],
-                    'condition'   => GuardInterface::CONDITION_AND
-                ]],
+                'rules'               => [
+                    'route' => [
+                        'permissions' => ['post.edit', 'post.read'],
+                        'condition'   => GuardInterface::CONDITION_AND,
+                    ],
+                ],
                 'matchedRouteName'    => 'route',
                 'identityPermissions' => [['post.edit', null, true], ['post.read', null, true]],
                 'isGranted'           => true,
-                'policy'              => GuardInterface::POLICY_DENY
-            ]
+                'policy'              => GuardInterface::POLICY_DENY,
+            ],
         ];
     }
 
     #[DataProvider('routeDataProvider')]
     public function testRoutePermissionGranted(
         array $rules,
-        $matchedRouteName,
+        string $matchedRouteName,
         array $identityPermissions,
-        $isGranted,
-        $policy
-    ) {
+        bool $isGranted,
+        string $policy
+    ): void {
         $routeMatch = $this->createRouteMatch();
         $routeMatch->setMatchedRouteName($matchedRouteName);
 
         $event = new MvcEvent();
         $event->setRouteMatch($routeMatch);
 
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface');
+        $authorizationService = $this->createMock(AuthorizationServiceInterface::class);
         $authorizationService->expects($this->any())->method('isGranted')->willReturnMap($identityPermissions);
 
         $routeGuard = new RoutePermissionsGuard($authorizationService, $rules);
@@ -391,9 +412,9 @@ class RoutePermissionsGuardTest extends TestCase
 
     public function testProperlyFillEventOnAuthorization()
     {
-        $eventManager = $this->createMock('Laminas\EventManager\EventManagerInterface');
+        $eventManager = $this->createMock(EventManagerInterface::class);
 
-        $application = $this->createMock('Laminas\Mvc\Application');
+        $application = $this->createMock(Application::class);
         $application->expects($this->never())->method('getEventManager')->willReturn($eventManager);
 
         $routeMatch = $this->createRouteMatch();
@@ -403,11 +424,11 @@ class RoutePermissionsGuardTest extends TestCase
         $event->setRouteMatch($routeMatch);
         $event->setApplication($application);
 
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface');
+        $authorizationService = $this->createMock(AuthorizationServiceInterface::class);
         $authorizationService->expects($this->once())->method('isGranted')->with('post.edit')->willReturn(true);
 
         $routeGuard = new RoutePermissionsGuard($authorizationService, [
-            'adminRoute' => 'post.edit'
+            'adminRoute' => 'post.edit',
         ]);
         $routeGuard->onResult($event);
 
@@ -417,9 +438,9 @@ class RoutePermissionsGuardTest extends TestCase
 
     public function testProperlySetUnauthorizedAndTriggerEventOnUnauthorized()
     {
-        $eventManager = $this->createMock('Laminas\EventManager\EventManager');
+        $eventManager = $this->createMock(EventManager::class);
 
-        $application = $this->createMock('Laminas\Mvc\Application');
+        $application = $this->createMock(Application::class);
         $application->expects($this->once())->method('getEventManager')->willReturn($eventManager);
 
         $routeMatch = $this->createRouteMatch();
@@ -431,18 +452,18 @@ class RoutePermissionsGuardTest extends TestCase
 
         $eventManager->expects($this->once())->method('triggerEvent')->with($event);
 
-        $authorizationService = $this->createMock('Lmc\Rbac\Mvc\Service\AuthorizationServiceInterface');
+        $authorizationService = $this->createMock(AuthorizationServiceInterface::class);
         $authorizationService->expects($this->once())->method('isGranted')->with('post.edit')
             ->willReturn(false);
 
         $routeGuard = new RoutePermissionsGuard($authorizationService, [
-            'adminRoute' => 'post.edit'
+            'adminRoute' => 'post.edit',
         ]);
         $routeGuard->onResult($event);
 
         $this->assertTrue($event->propagationIsStopped());
         $this->assertEquals(RouteGuard::GUARD_UNAUTHORIZED, $event->getError());
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\Exception\UnauthorizedException', $event->getParam('exception'));
+        $this->assertInstanceOf(UnauthorizedException::class, $event->getParam('exception'));
     }
 
     public function createRouteMatch(array $params = []): RouteMatch

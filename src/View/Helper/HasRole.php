@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,9 +26,6 @@ use Lmc\Rbac\Mvc\Service\RoleService;
 
 /**
  * View helper that allows to test a role in a view
- *
- * @author  JM Leroux <jmleroux.pro@gmail.com>
- * @license MIT
  */
 class HasRole extends AbstractHelper
 {
@@ -33,8 +33,6 @@ class HasRole extends AbstractHelper
 
     /**
      * Constructor
-     *
-     * @param RoleService $roleService
      */
     public function __construct(RoleService $roleService)
     {
@@ -43,10 +41,9 @@ class HasRole extends AbstractHelper
 
     /**
      * @param string|string[] $roleOrRoles
-     * @return bool
      */
     public function __invoke(array|string $roleOrRoles): bool
     {
-        return $this->roleService->matchIdentityRoles((array)$roleOrRoles);
+        return $this->roleService->matchIdentityRoles((array) $roleOrRoles);
     }
 }

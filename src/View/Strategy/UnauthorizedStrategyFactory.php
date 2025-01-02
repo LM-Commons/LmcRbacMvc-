@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,24 +21,24 @@
 
 namespace Lmc\Rbac\Mvc\View\Strategy;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Psr\Container\ContainerInterface;
 
 /**
  * Factory to create an unauthorized strategy
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class UnauthorizedStrategyFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): UnauthorizedStrategy
-    {
-        /* @var ModuleOptions $moduleOptions */
+    public function __invoke(
+        ContainerInterface $container,
+        $requestedName,
+        ?array $options = null
+    ): UnauthorizedStrategy {
+        /** @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
 
         return new UnauthorizedStrategy($moduleOptions->getUnauthorizedStrategy());

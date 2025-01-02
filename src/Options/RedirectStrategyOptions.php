@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -22,9 +25,6 @@ use Laminas\Stdlib\AbstractOptions;
 
 /**
  * Redirect strategy options
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class RedirectStrategyOptions extends AbstractOptions
 {
@@ -53,84 +53,51 @@ class RedirectStrategyOptions extends AbstractOptions
      */
     protected string $previousUriQueryKey = 'redirectTo';
 
-    /**
-     * @param bool $redirectWhenConnected
-     * @return void
-     */
     public function setRedirectWhenConnected(bool $redirectWhenConnected): void
     {
         $this->redirectWhenConnected = $redirectWhenConnected;
     }
 
-    /**
-     * @return bool
-     */
     public function getRedirectWhenConnected(): bool
     {
         return $this->redirectWhenConnected;
     }
 
-    /**
-     * @param string $redirectToRouteConnected
-     * @return void
-     */
     public function setRedirectToRouteConnected(string $redirectToRouteConnected): void
     {
         $this->redirectToRouteConnected = $redirectToRouteConnected;
     }
 
-    /**
-     * @return string
-     */
     public function getRedirectToRouteConnected(): string
     {
         return $this->redirectToRouteConnected;
     }
 
-    /**
-     * @param string $redirectToRouteDisconnected
-     * @return void
-     */
     public function setRedirectToRouteDisconnected(string $redirectToRouteDisconnected): void
     {
         $this->redirectToRouteDisconnected = $redirectToRouteDisconnected;
     }
 
-    /**
-     * @return string
-     */
     public function getRedirectToRouteDisconnected(): string
     {
         return $this->redirectToRouteDisconnected;
     }
 
-    /**
-     * @param boolean $appendPreviousUri
-     */
     public function setAppendPreviousUri(bool $appendPreviousUri): void
     {
         $this->appendPreviousUri = $appendPreviousUri;
     }
 
-    /**
-     * @return boolean
-     */
     public function getAppendPreviousUri(): bool
     {
         return $this->appendPreviousUri;
     }
 
-    /**
-     * @param string $previousUriQueryKey
-     */
     public function setPreviousUriQueryKey(string $previousUriQueryKey): void
     {
         $this->previousUriQueryKey = $previousUriQueryKey;
     }
 
-    /**
-     * @return string
-     */
     public function getPreviousUriQueryKey(): string
     {
         return $this->previousUriQueryKey;

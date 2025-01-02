@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,9 +26,6 @@ use Lmc\Rbac\Identity\IdentityInterface;
 
 /**
  * This provider uses the Laminas authentication service to fetch the identity
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class AuthenticationIdentityProvider implements IdentityProviderInterface
 {
@@ -33,8 +33,6 @@ class AuthenticationIdentityProvider implements IdentityProviderInterface
 
     /**
      * Constructor
-     *
-     * @param AuthenticationServiceInterface $authenticationService
      */
     public function __construct(AuthenticationServiceInterface $authenticationService)
     {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -19,11 +22,12 @@
 namespace LmcTest\Rbac\Mvc\Guard;
 
 use Lmc\Rbac\Mvc\Guard\GuardInterface;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Guard\ProtectionPolicyTrait
  */
-class ProtectionPolicyTraitTest extends \PHPUnit\Framework\TestCase
+class ProtectionPolicyTraitTest extends TestCase
 {
     public function testTrait()
     {

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,41 +21,46 @@
 
 namespace LmcTest\Rbac\Mvc\View\Strategy;
 
+use Laminas\Authentication\AuthenticationService;
 use Laminas\ServiceManager\ServiceLocatorInterface;
+use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Lmc\Rbac\Mvc\Options\RedirectStrategyOptions;
+use Lmc\Rbac\Mvc\View\Strategy\RedirectStrategy;
 use Lmc\Rbac\Mvc\View\Strategy\RedirectStrategyFactory;
+use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Container\ContainerInterface;
 
 /**
  * @covers \Lmc\Rbac\Mvc\View\Strategy\RedirectStrategyFactory
  */
-class RedirectStrategyFactoryTest extends \PHPUnit\Framework\TestCase
+class RedirectStrategyFactoryTest extends TestCase
 {
     use ProphecyTrait;
 
     public function testFactory()
     {
-        $redirectStrategyOptions = $this->createMock('Lmc\Rbac\Mvc\Options\RedirectStrategyOptions');
+        $redirectStrategyOptions = $this->createMock(RedirectStrategyOptions::class);
 
-        $moduleOptionsMock = $this->createMock('Lmc\Rbac\Mvc\Options\ModuleOptions');
+        $moduleOptionsMock = $this->createMock(ModuleOptions::class);
         $moduleOptionsMock->expects($this->once())
                           ->method('getRedirectStrategy')
                           ->will($this->returnValue($redirectStrategyOptions));
 
-        $authenticationServiceMock = $this->createMock('Laminas\Authentication\AuthenticationService');
+        $authenticationServiceMock = $this->createMock(AuthenticationService::class);
 
         $serviceLocatorMock = $this->prophesize(ServiceLocatorInterface::class);
         $serviceLocatorMock->willImplement(ContainerInterface::class);
-        $serviceLocatorMock->get('Lmc\Rbac\Mvc\Options\ModuleOptions')
+        $serviceLocatorMock->get(ModuleOptions::class)
                            ->willReturn($moduleOptionsMock)
                            ->shouldBeCalled();
-        $serviceLocatorMock->get('Laminas\Authentication\AuthenticationService')
+        $serviceLocatorMock->get(AuthenticationService::class)
                            ->willReturn($authenticationServiceMock)
                            ->shouldBeCalled();
 
         $factory          = new RedirectStrategyFactory();
-        $redirectStrategy = $factory($serviceLocatorMock->reveal(), 'Lmc\Rbac\Mvc\View\Strategy\RedirectStrategy');
+        $redirectStrategy = $factory($serviceLocatorMock->reveal(), RedirectStrategy::class);
 
-        $this->assertInstanceOf('Lmc\Rbac\Mvc\View\Strategy\RedirectStrategy', $redirectStrategy);
+        $this->assertInstanceOf(RedirectStrategy::class, $redirectStrategy);
     }
 }

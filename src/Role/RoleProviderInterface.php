@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -26,8 +29,6 @@ use Lmc\Rbac\Role\RoleProviderInterface as BaseRoleProviderInterface;
  * Data can come from anywhere. LmcRbacMvc is bundled with two providers that allow to load roles from database
  * or from memory
  *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  * @deprecated Use Lmc\Rbac\Role\RoleProviderInterface instead
  */
 interface RoleProviderInterface extends BaseRoleProviderInterface

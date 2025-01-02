@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,20 +23,13 @@ namespace Lmc\Rbac\Mvc\Guard;
 
 /**
  * Trait that is can be used for any guard that uses the protection policy pattern
- *
  */
 trait ProtectionPolicyTrait
 {
-    /**
-     * @var string
-     */
     protected string $protectionPolicy = GuardInterface::POLICY_DENY;
 
     /**
      * Set the protection policy
-     *
-     * @param  string $protectionPolicy
-     * @return void
      */
     public function setProtectionPolicy(string $protectionPolicy): void
     {
@@ -42,8 +38,6 @@ trait ProtectionPolicyTrait
 
     /**
      * Get the protection policy
-     *
-     * @return string
      */
     public function getProtectionPolicy(): string
     {

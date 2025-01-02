@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -21,14 +24,9 @@ namespace Lmc\Rbac\Mvc;
 use Laminas\EventManager\EventInterface;
 use Laminas\ModuleManager\Feature\BootstrapListenerInterface;
 use Laminas\ModuleManager\Feature\ConfigProviderInterface;
-use Laminas\Mvc\Application;
-use Lmc\Rbac\Mvc\Guard\GuardInterface;
 
 /**
  * Module class for LmcRbacMvc
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class Module implements BootstrapListenerInterface, ConfigProviderInterface
 {
@@ -37,12 +35,12 @@ class Module implements BootstrapListenerInterface, ConfigProviderInterface
      */
     public function onBootstrap(EventInterface $e): void
     {
-        /* @var Application $application */
+        /** @var Application $application */
         $application    = $e->getTarget();
         $serviceManager = $application->getServiceManager();
         $eventManager   = $application->getEventManager();
 
-        /* @var GuardInterface[]|array $guards */
+        /** @var GuardInterface[]|array $guards */
         $guards = $serviceManager->get('Lmc\Rbac\Mvc\Guards');
 
         // Register listeners, if any
@@ -58,11 +56,11 @@ class Module implements BootstrapListenerInterface, ConfigProviderInterface
     {
         $configProvider = new ConfigProvider();
         return [
-            'service_manager' => $configProvider->getDependencies(),
-            'view_helpers' => $configProvider->getViewHelperConfig(),
+            'service_manager'    => $configProvider->getDependencies(),
+            'view_helpers'       => $configProvider->getViewHelperConfig(),
             'controller_plugins' => $configProvider->getControllerPluginConfig(),
-            'view_manager' => $configProvider->getViewManagerConfig(),
-            'lmc_rbac' => $configProvider->getModuleConfig(),
+            'view_manager'       => $configProvider->getViewManagerConfig(),
+            'lmc_rbac'           => $configProvider->getModuleConfig(),
         ];
     }
 }

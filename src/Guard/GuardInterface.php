@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -30,32 +33,25 @@ use Laminas\Mvc\MvcEvent;
  * A guard can be used to block, for instance, a whole route hierarchy (all admin routes). However, only
  * using guards is not sufficient and rather limited, and you should protected your services using the
  * proper authorization service (see the doc for more details)
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 interface GuardInterface extends ListenerAggregateInterface
 {
     /**
      * Constant for guard that can be added to the MVC event result
      */
-    const GUARD_UNAUTHORIZED = 'guard-unauthorized';
+    public const GUARD_UNAUTHORIZED = 'guard-unauthorized';
 
     /**
      * Protection policy constants
      */
-    const POLICY_DENY  = 'deny';
-    const POLICY_ALLOW = 'allow';
+    public const POLICY_DENY  = 'deny';
+    public const POLICY_ALLOW = 'allow';
 
     /**
      * Condition constants
      */
-    const CONDITION_OR  = 'OR';
-    const CONDITION_AND = 'AND';
+    public const CONDITION_OR  = 'OR';
+    public const CONDITION_AND = 'AND';
 
-    /**
-     * @param  MvcEvent $event
-     * @return bool
-     */
     public function isGranted(MvcEvent $event): bool;
 }

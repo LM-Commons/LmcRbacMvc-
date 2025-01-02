@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -23,8 +26,6 @@ use Lmc\Rbac\Identity\IdentityInterface as BaseIdentityInterface;
 /**
  * Interface for an identity
  *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  * @deprecated
  */
 interface IdentityInterface extends BaseIdentityInterface

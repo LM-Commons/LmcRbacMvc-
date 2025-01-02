@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,30 +21,29 @@
 
 namespace Lmc\Rbac\Mvc\Guard;
 
-use Psr\Container\ContainerInterface;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
 use Lmc\Rbac\Mvc\Service\RoleService;
+use Psr\Container\ContainerInterface;
 
 /**
  * Create a controller guard
- *
  */
 class ControllerGuardFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): ControllerGuard
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): ControllerGuard
     {
         if (null === $options) {
             $options = [];
         }
 
-        /* @var ModuleOptions $moduleOptions */
+        /** @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
 
-        /* @var RoleService $roleService */
+        /** @var RoleService $roleService */
         $roleService = $container->get(RoleService::class);
 
         $controllerGuard = new ControllerGuard($roleService, $options);

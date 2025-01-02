@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,12 +21,18 @@
 
 namespace LmcTest\Rbac\Mvc;
 
+use Laminas\EventManager\EventManagerInterface;
+use Laminas\Mvc\Application;
+use Laminas\Mvc\MvcEvent;
+use Laminas\ServiceManager\ServiceManager;
+use Lmc\Rbac\Mvc\Guard\GuardInterface;
 use Lmc\Rbac\Mvc\Module;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Lmc\Rbac\Mvc\Module
  */
-class ModuleTest extends \PHPUnit\Framework\TestCase
+class ModuleTest extends TestCase
 {
     public function testConfigIsArray()
     {
@@ -34,16 +43,16 @@ class ModuleTest extends \PHPUnit\Framework\TestCase
     public function testCanRegisterGuards()
     {
         $module         = new Module();
-        $mvcEvent       = $this->createMock('Laminas\Mvc\MvcEvent');
-        $application    = $this->createMock('Laminas\Mvc\Application');
-        $eventManager   = $this->createMock('Laminas\EventManager\EventManagerInterface');
-        $serviceManager = $this->createMock('Laminas\ServiceManager\ServiceManager');
+        $mvcEvent       = $this->createMock(MvcEvent::class);
+        $application    = $this->createMock(Application::class);
+        $eventManager   = $this->createMock(EventManagerInterface::class);
+        $serviceManager = $this->createMock(ServiceManager::class);
 
         $mvcEvent->expects($this->once())->method('getTarget')->willReturn($application);
         $application->expects($this->once())->method('getEventManager')->willReturn($eventManager);
         $application->expects($this->once())->method('getServiceManager')->willReturn($serviceManager);
 
-        $guard = $this->createMock('Lmc\Rbac\Mvc\Guard\GuardInterface');
+        $guard = $this->createMock(GuardInterface::class);
         $guard->expects($this->once())->method('attach')->with($eventManager);
 
         $guards = [$guard];

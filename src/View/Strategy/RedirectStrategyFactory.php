@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /*
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -18,25 +21,22 @@
 
 namespace Lmc\Rbac\Mvc\View\Strategy;
 
-use Psr\Container\ContainerInterface;
 use Laminas\Authentication\AuthenticationService;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Lmc\Rbac\Mvc\Options\ModuleOptions;
+use Psr\Container\ContainerInterface;
 
 /**
  * Factory to create a redirect strategy
- *
- * @author  Michaël Gallego <mic.gallego@gmail.com>
- * @license MIT
  */
 class RedirectStrategyFactory implements FactoryInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null): RedirectStrategy
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): RedirectStrategy
     {
-        /* @var ModuleOptions $moduleOptions */
+        /** @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
         /** @var AuthenticationService $authenticationService */
         $authenticationService = $container->get(AuthenticationService::class);
