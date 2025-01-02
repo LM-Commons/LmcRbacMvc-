@@ -38,7 +38,7 @@ class GuardPluginManagerFactory implements FactoryInterface
      * @param array|null $options
      * @return GuardPluginManager
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         $config = $container->get('Config')['lmc_rbac']['guard_manager'];
 

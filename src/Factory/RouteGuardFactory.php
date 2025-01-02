@@ -60,7 +60,7 @@ class RouteGuardFactory implements FactoryInterface
      * @param array|null $options
      * @return RouteGuard
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         if (null === $options) {
             $options = [];

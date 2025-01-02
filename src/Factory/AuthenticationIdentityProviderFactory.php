@@ -38,7 +38,7 @@ class AuthenticationIdentityProviderFactory implements FactoryInterface
      * @param array|null $options
      * @return AuthenticationIdentityProvider
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         /* @var AuthenticationService $authenticationProvider */
         $authenticationProvider = $container->get(AuthenticationService::class);

@@ -38,7 +38,7 @@ class AssertionPluginManagerFactory implements FactoryInterface
      * @param array|null $options
      * @return AssertionPluginManager
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         $config = $container->get('Config')['lmc_rbac']['assertion_manager'];
 

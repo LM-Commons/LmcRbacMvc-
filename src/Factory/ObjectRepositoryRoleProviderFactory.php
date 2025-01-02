@@ -61,7 +61,7 @@ class ObjectRepositoryRoleProviderFactory implements FactoryInterface
      * @param array|null $options
      * @return ObjectRepositoryRoleProvider
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         $objectRepository = null;
 

@@ -41,7 +41,7 @@ class AuthorizationServiceDelegatorFactory implements DelegatorFactoryInterface
      * @param array|null $options
      * @return mixed
      */
-    public function __invoke(ContainerInterface $container, $name, callable $callback, array $options = null)
+    public function __invoke(ContainerInterface $container, $name, callable $callback, array|null $options = null)
     {
         $instanceToDecorate = call_user_func($callback);
 

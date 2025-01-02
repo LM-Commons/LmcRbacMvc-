@@ -38,7 +38,7 @@ class HasRoleViewHelperFactory implements FactoryInterface
      * @param array|null $options
      * @return HasRole
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         /* @var RoleService $roleService */
         $roleService = $container->get(RoleService::class);

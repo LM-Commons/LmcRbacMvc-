@@ -39,7 +39,7 @@ class GuardsFactory implements FactoryInterface
      * @param array|null $options
      * @return array
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         /* @var ModuleOptions $options */
         $options       = $container->get(ModuleOptions::class);

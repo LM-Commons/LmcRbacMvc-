@@ -39,7 +39,7 @@ class RedirectStrategyFactory implements FactoryInterface
      * @param array|null $options
      * @return RedirectStrategy
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, array|null $options = null)
     {
         /* @var ModuleOptions $moduleOptions */
         $moduleOptions = $container->get(ModuleOptions::class);
