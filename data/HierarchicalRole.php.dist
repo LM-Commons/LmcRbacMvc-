@@ -25,6 +25,8 @@ use LmcRbac\Permission\PermissionInterface;
  * @ORM\Entity
  * @ORM\Table(name="roles")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'roles')]
 class HierarchicalRole implements HierarchicalRoleInterface
 {
     /**
@@ -34,6 +36,9 @@ class HierarchicalRole implements HierarchicalRoleInterface
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id]
+    #[ORM\Column(name: 'id', type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -41,6 +46,7 @@ class HierarchicalRole implements HierarchicalRoleInterface
      *
      * @ORM\Column(type="string", length=48, unique=true)
      */
+    #[ORM\Column(name: 'name', type: 'string', length: 48, unique: true)]
     protected $name;
 
     /**
@@ -48,6 +54,7 @@ class HierarchicalRole implements HierarchicalRoleInterface
      *
      * @ORM\ManyToMany(targetEntity="HierarchicalRole")
      */
+    #[ORM\ManyToMany(targetEntity: 'HierarchicalRole')]
     protected $children = [];
 
     /**
@@ -55,6 +62,7 @@ class HierarchicalRole implements HierarchicalRoleInterface
      *
      * @ORM\ManyToMany(targetEntity="Permission", indexBy="name", fetch="EAGER")
      */
+    #[ORM\ManyToMany(targetEntity: 'Permission', fetch: 'EAGER', indexBy: 'name')]
     protected $permissions;
 
     /**

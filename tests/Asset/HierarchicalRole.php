@@ -27,6 +27,8 @@ use Rbac\Role\HierarchicalRole as BaseHierarchicalRole;
  * @ORM\Entity
  * @ORM\Table(name="hierarchical_roles")
  */
+#[ORM\Entity]
+#[ORM\Table(name: 'hierarchical_roles')]
 class HierarchicalRole extends BaseHierarchicalRole
 {
     /**
@@ -36,6 +38,9 @@ class HierarchicalRole extends BaseHierarchicalRole
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue(strategy="AUTO")
      */
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     protected $id;
 
     /**
@@ -43,6 +48,7 @@ class HierarchicalRole extends BaseHierarchicalRole
      *
      * @ORM\Column(type="string", length=32, unique=true)
      */
+    #[ORM\Column(type: 'string', length: 32, unique: true)]
     protected $name;
 
     /**
@@ -50,6 +56,7 @@ class HierarchicalRole extends BaseHierarchicalRole
      *
      * @ORM\ManyToMany(targetEntity="HierarchicalRole")
      */
+    #[ORM\ManyToMany(targetEntity: HierarchicalRole::class)]
     protected $children;
 
     /**
@@ -57,6 +64,7 @@ class HierarchicalRole extends BaseHierarchicalRole
      *
      * @ORM\ManyToMany(targetEntity="Permission", indexBy="name", fetch="EAGER")
      */
+    #[ORM\ManyToMany(targetEntity: Permission::class, fetch:"EAGER", indexBy: "name")]
     protected $permissions;
 
     /**
@@ -64,6 +72,7 @@ class HierarchicalRole extends BaseHierarchicalRole
      */
     public function __construct($name)
     {
+        parent::__construct($name);
         $this->name        = (string) $name;
         $this->permissions = new ArrayCollection();
     }
