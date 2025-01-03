@@ -33,19 +33,19 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+        "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
         "laminas/laminas-eventmanager": "^3.0",
-        "laminas/laminas-mvc": "^3.0",
-        "laminas/laminas-servicemanager": "^3.0",
-        "lm-commons/lmc-rbac": "^2.0"
+        "laminas/laminas-mvc": "^3.2",
+        "laminas/laminas-servicemanager": "^3.15",
+        "lm-commons/lmc-rbac": "^2.1"
     },
     "require-dev": {
         "laminas/laminas-authentication": "^2.2",
         "laminas/laminas-coding-standard": "^3.0",
-        "phpunit/phpunit": "10.5.38",
+        "phpunit/phpunit": "^10.5.38",
         "phpspec/prophecy-phpunit": "^2.0",
         "psalm/plugin-phpunit": "^0.19.0",
-        "vimeo/psalm": "^5.25"
+        "vimeo/psalm": "^5.26"
     },
     "suggest": {
         "lm-commons/lmc-rbac-mvc-devtools": "if you want to collect and show information about roles and guards in Laminas Developer Tools"
