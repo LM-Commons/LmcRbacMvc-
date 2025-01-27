@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Lmc\Rbac\Mvc\View\Strategy;
 
+use Laminas\EventManager\EventManagerInterface;
 use Laminas\Http\Response as HttpResponse;
 use Laminas\Mvc\MvcEvent;
 use Laminas\View\Model\ViewModel;
@@ -41,6 +42,15 @@ class UnauthorizedStrategy extends AbstractStrategy
     public function __construct(UnauthorizedStrategyOptions $options)
     {
         $this->options = $options;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function attach(EventManagerInterface $events, $priority = 1): void
+    {
+        // Temporary fix to priority to make sure listeners runs after MVC's exception handler
+        $this->listeners[] = $events->attach(MvcEvent::EVENT_DISPATCH_ERROR, [$this, 'onError'], -1);
     }
 
     /**
